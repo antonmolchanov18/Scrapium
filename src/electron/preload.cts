@@ -1,6 +1,9 @@
-const electron = require('electron');
+const { contextBridge, ipcRenderer, } = require('electron');
 
-electron.contextBridge.exposeInMainWorld('API', {
+contextBridge.exposeInMainWorld('API', {
   subcribeStatics: (callback: (statistics: any) => void) => callback({}),
   getStaticData: () => console.log('static'),
+  minimizeWindow: () => ipcRenderer.send('minimize-window'),
+  maximizeWindow: () => ipcRenderer.send('maximize-window'),
+  closeWindow: () => ipcRenderer.send('close-window'),
 })

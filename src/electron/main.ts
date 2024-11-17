@@ -1,10 +1,15 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { isDev } from './util.js';
 import { getPreloadPath } from './pathResolver.js';
 
 app.on('ready', () => {
   const mainWindow = new BrowserWindow({
+    frame: false,
+    width: 1024,
+    height: 768,
+    minWidth: 1024,
+    minHeight: 768,
     webPreferences: {
       preload: getPreloadPath(),
     },
@@ -14,4 +19,22 @@ app.on('ready', () => {
   } else {
     mainWindow.loadFile(path.join(app.getAppPath(), '/dist-react/index.html'))
   }
+
+  ipcMain.on('minimize-window', () => {
+    mainWindow.minimize();
+  });
+
+  ipcMain.on('maximize-window', () => {
+    if (mainWindow.isMaximized()) {
+      // Якщо вікно вже максимізоване, відновлюємо його розмір
+      mainWindow.restore();
+    } else {
+      // Якщо вікно не максимізоване, максимізуємо його
+      mainWindow.maximize();
+    }
+  });
+
+  ipcMain.on('close-window', () => {
+    mainWindow.close();
+  });
 })

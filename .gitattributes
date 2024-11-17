@@ -1,0 +1,13 @@
+# Всі текстові файли повинні мати однакові кінці рядка на всіх платформах
+* text=auto
+
+# Для специфічних файлів зберігаємо кінці рядка в форматі LF
+package-lock.json text eol=lf
+package.json text eol=lf
+src/ui/App.tsx text eol=lf
+src/ui/main.tsx text eol=lf
+src/ui/vite-env.d.ts text eol=lf
+vite.config.ts text eol=lf
+
+# Для SVG файлів не змінюємо кінці рядка
+src/ui/assets/icons/*.svg binary

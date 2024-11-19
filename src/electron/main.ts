@@ -2,8 +2,11 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { isDev } from './util.js';
 import { getPreloadPath } from './pathResolver.js';
+import { Level } from 'level';
 
 app.on('ready', () => {
+  const tasksDb = new Level(path.join(app.getAppPath(), 'data', 'tasks'));
+
   const mainWindow = new BrowserWindow({
     frame: false,
     width: 1024,

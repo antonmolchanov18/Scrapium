@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { isDev } from './util.js';
 import { getPreloadPath } from './pathResolver.js';
-import { Level } from 'level';
+import Database from './database/Database.js';
 
 class MainWindow {
   private mainWindow: BrowserWindow | null = null;
@@ -58,5 +58,7 @@ class MainWindow {
     });
   };
 }
+
+const tasksDatabase = new Database(path.join(app.getAppPath(), '/data/tasks'));
 
 new MainWindow();

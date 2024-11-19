@@ -4,40 +4,59 @@ import { isDev } from './util.js';
 import { getPreloadPath } from './pathResolver.js';
 import { Level } from 'level';
 
-app.on('ready', () => {
-  const tasksDb = new Level(path.join(app.getAppPath(), 'data', 'tasks'));
+class MainWindow {
+  private mainWindow: BrowserWindow | null = null;
 
-  const mainWindow = new BrowserWindow({
-    frame: false,
-    width: 1024,
-    height: 768,
-    minWidth: 1024,
-    minHeight: 768,
-    webPreferences: {
-      preload: getPreloadPath(),
-    },
-  });
-  if (isDev()) {
-    mainWindow.loadURL('http://localhost:5123');
-  } else {
-    mainWindow.loadFile(path.join(app.getAppPath(), '/dist-react/index.html'))
+  constructor() {
+    app.on('ready', () => this.createWindow());
   }
 
-  ipcMain.on('minimize-window', () => {
-    mainWindow.minimize();
-  });
+  private createWindow = (): void => {
+    if (this.mainWindow) return;
 
-  ipcMain.on('maximize-window', () => {
-    if (mainWindow.isMaximized()) {
-      // Якщо вікно вже максимізоване, відновлюємо його розмір
-      mainWindow.restore();
+    this.mainWindow = new BrowserWindow({
+      frame: false,
+      width: 1024,
+      height: 768,
+      minWidth: 1024,
+      minHeight: 768,
+      webPreferences: {
+        preload: getPreloadPath(),
+      },
+    });
+
+    if (isDev()) {
+      this.mainWindow.loadURL('http://localhost:5123');
     } else {
-      // Якщо вікно не максимізоване, максимізуємо його
-      mainWindow.maximize();
+      this.mainWindow.loadFile(path.join(app.getAppPath(), '/dist-react/index.html'));
     }
-  });
 
-  ipcMain.on('close-window', () => {
-    mainWindow.close();
-  });
-})
+    this.registerEvents();
+  };
+
+  private registerEvents = (): void => {
+    if (!this.mainWindow) return;
+
+    ipcMain.on('minimize-window', (event: Electron.IpcMainEvent) => {
+      this.mainWindow?.minimize();
+    });
+
+    ipcMain.on('maximize-window', (event: Electron.IpcMainEvent) => {
+      if (this.mainWindow?.isMaximized()) {
+        this.mainWindow.restore();
+      } else {
+        this.mainWindow?.maximize();
+      }
+    });
+
+    ipcMain.on('close-window', (event: Electron.IpcMainEvent) => {
+      this.mainWindow?.close();
+    });
+
+    this.mainWindow.on('closed', () => {
+      this.mainWindow = null;
+    });
+  };
+}
+
+new MainWindow();

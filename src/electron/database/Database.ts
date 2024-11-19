@@ -7,16 +7,20 @@ export default class Database {
     this.db = new Level(databasePath, { valueEncoding: encoding });
   }
 
+  private async handleError(err: any, onError?: (error: any) => void, methodName?: string): Promise<void> {
+    if (onError) {
+      onError(err);
+    } else {
+      console.error(`Error in ${methodName}:`, err);
+    }
+    throw err;
+  }
+
   async put(key: string, value: any, onError?: (error: any) => void): Promise<void> {
     try {
       await this.db.put(key, value);
     } catch (err) {
-      if (onError) {
-        onError(err);
-      } else {
-        console.error('Error saving data:', err);
-      }
-      throw err;
+      await this.handleError(err, onError);
     }
   }
 
@@ -25,12 +29,7 @@ export default class Database {
       const value = await this.db.get(key);
       return value;
     } catch (err) {
-      if (onError) {
-        onError(err);
-      } else {
-        console.error('Error retrieving data:', err);
-      }
-      throw err;
+      await this.handleError(err, onError);
     }
   }
 
@@ -38,12 +37,7 @@ export default class Database {
     try {
       await this.db.del(key);
     } catch (err) {
-      if (onError) {
-        onError(err);
-      } else {
-        console.error('Error deleting data:', err);
-      }
-      throw err;
+      await this.handleError(err, onError);
     }
   }
 
@@ -52,11 +46,7 @@ export default class Database {
       await this.db.get(key);
       return true;
     } catch (err) {
-      if (onError) {
-        onError(err);
-      } else {
-        console.error('Error checking existence of key:', err);
-      }
+      await this.handleError(err, onError);
       return false;
     }
   }
@@ -65,12 +55,7 @@ export default class Database {
     try {
       await this.db.close();
     } catch (err) {
-      if (onError) {
-        onError(err);
-      } else {
-        console.error('Error closing database:', err);
-      }
-      throw err;
+      await this.handleError(err, onError);
     }
   }
 }

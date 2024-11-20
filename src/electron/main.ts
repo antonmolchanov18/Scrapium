@@ -2,16 +2,29 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { isDev } from './util.js';
 import { getPreloadPath } from './pathResolver.js';
-import Database from './database/Database.js';
+import Database from './Database/Database.js';
 
 class MainWindow {
   private mainWindow: BrowserWindow | null = null;
+  private Tasks: Database;
 
   constructor() {
-    app.on('ready', () => this.createWindow());
+    this.Tasks = new Database(path.join(app.getAppPath(), '/data/tasks'));
+    app.on('ready', this.initializeApp);
   }
 
-  private createWindow = (): void => {
+  private initializeApp = async (): Promise<void> => {
+    try {
+      await this.Tasks.open();
+      await this.createWindow();
+      console.log('createWindow successfully');
+    } catch (err) {
+      console.error('Failed to open database:', err);
+      app.quit();
+    }
+  };
+
+  private async createWindow(): Promise<void> {
     if (this.mainWindow) return;
 
     this.mainWindow = new BrowserWindow({
@@ -26,9 +39,9 @@ class MainWindow {
     });
 
     if (isDev()) {
-      this.mainWindow.loadURL('http://localhost:5123');
+      await this.mainWindow.loadURL('http://localhost:5123');
     } else {
-      this.mainWindow.loadFile(path.join(app.getAppPath(), '/dist-react/index.html'));
+      await this.mainWindow.loadFile(path.join(app.getAppPath(), '/dist-react/index.html'));
     }
 
     this.registerEvents();
@@ -59,6 +72,6 @@ class MainWindow {
   };
 }
 
-const tasksDatabase = new Database(path.join(app.getAppPath(), '/data/tasks'));
+
 
 new MainWindow();

@@ -19,7 +19,7 @@ export class MainApp {
 
   private initializeApp = async (): Promise<void> => {
     try {
-      await this.Task.open();
+      this.Task.open();
       const mainWindow = await this.windowManager.createMainWindow(
         isDev() ? 'http://localhost:5123' : path.join(app.getAppPath(), '/dist-react/index.html')
       );

@@ -4,6 +4,7 @@ declare global {
       closeWindow: () => void;
       maximizeWindow: () => void;
       minimizeWindow: () => void;
+      createTask: (data: data) => Promise<any>;
     };
   }
 

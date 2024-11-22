@@ -33,7 +33,7 @@ export default class Database {
     try {
       await this.db.put(key, value);
     } catch (err) {
-      await this.handleError(err, onError);
+      await this.handleError(err, onError, 'put');
     }
   }
 
@@ -42,7 +42,22 @@ export default class Database {
       const value = await this.db.get(key);
       return value;
     } catch (err) {
-      await this.handleError(err, onError);
+      await this.handleError(err, onError, 'get');
+    }
+  }
+
+  async getLastRecord(): Promise<any | null> {
+    try {
+      let lastRecord: any = null;
+      
+      for await (const [key, value] of this.db.iterator({ reverse: true, limit: 1 })) {
+        lastRecord = { key, value };
+      }
+      
+      return lastRecord;
+    } catch (err) {
+      await this.handleError(err, undefined, 'getLastRecord');
+      return null;
     }
   }
 
@@ -50,7 +65,23 @@ export default class Database {
     try {
       await this.db.del(key);
     } catch (err) {
-      await this.handleError(err, onError);
+      await this.handleError(err, onError, 'delete');
+    }
+  }
+
+  async readAll(start: number = 0, limit?: number, onError?: (error: any) => void): Promise<any[]> {
+    const allEntries: any[] = [];
+    try {
+      let count = 0;
+      for await (const [key, value] of this.db.iterator({ gt: start })) {
+        if (limit && count >= start + limit) break;
+        allEntries.push({ key, value });
+        count++;
+      }
+      return allEntries;
+    } catch (err) {
+      await this.handleError(err, onError, 'readAll');
+      return [];
     }
   }
 
@@ -59,7 +90,7 @@ export default class Database {
       await this.db.get(key);
       return true;
     } catch (err) {
-      await this.handleError(err, onError);
+      await this.handleError(err, onError, 'has');
       return false;
     }
   }
@@ -68,7 +99,32 @@ export default class Database {
     try {
       await this.db.close();
     } catch (err) {
-      await this.handleError(err, onError);
+      await this.handleError(err, onError, 'close');
     }
+  }
+
+  async isEmpty(): Promise<boolean> {
+    try {
+      let isEmpty = true;
+      for await (const _ of this.db.iterator({ limit: 1 })) {
+        isEmpty = false;
+        break;
+      }
+      return isEmpty;
+    } catch (err) {
+      await this.handleError(err, undefined, 'isEmpty');
+      return true;
+    }
+  }
+
+  create32BitKey(value: number): string {
+    const buffer = Buffer.alloc(4);
+    buffer.writeInt32LE(value, 0);
+    return buffer.toString('hex');
+  }
+
+  decode32BitKey(key: string): number {
+    const buffer = Buffer.from(key, 'hex');
+    return buffer.readInt32LE(0);
   }
 }

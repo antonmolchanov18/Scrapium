@@ -1,5 +1,6 @@
 @use './utils/reset';
 @use './utils/variables' as vars;
+@use './utils/index' as utils;
 
 html {
   font-size: 14px;
@@ -8,18 +9,4 @@ html {
 body {
   font-family: vars.$main-font-family;
   font-weight: vars.$main-font-weight;
-}
-
-.icon {
-  cursor: pointer;
-
-  &--small {
-    width: calc((15px / vars.$main-font-size) * 1rem);
-    height: calc((15px / vars.$main-font-size) * 1rem);
-  }
-
-  &--medium {
-    width: calc((25px / vars.$main-font-size) * 1rem);
-    height: calc((25px / vars.$main-font-size) * 1rem);
-  }
 }

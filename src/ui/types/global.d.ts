@@ -5,10 +5,24 @@ declare global {
       maximizeWindow: () => void;
       minimizeWindow: () => void;
       createTask: (data: data) => Promise<any>;
+      getTask: (key: string) => any;
     };
   }
 
   type WindowControlEventHandler = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => void;
+
+  interface Task {
+    key: string;
+    data: {
+      title: string;
+      url: string;
+    };
+  }
+  
+  interface TabItemProps {
+    task: Task;
+    isActive: boolean;
+  }
 }
 
 export {};

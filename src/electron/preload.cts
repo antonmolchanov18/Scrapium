@@ -18,4 +18,5 @@ contextBridge.exposeInMainWorld('API', {
   createTask: (taskData: any) => ipcRenderer.invoke('task:create', taskData),
   deleteTask: (key: any) => ipcRenderer.invoke('task:delete', key),
   getAllTask: () => ipcRenderer.invoke('task:get-all'),
+  getTask: (key: any) => ipcRenderer.invoke('task:get-one', key),
 })

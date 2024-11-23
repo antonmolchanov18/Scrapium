@@ -15,6 +15,7 @@ interface CustomLinkProps {
   to: string;
   isActiveClass?: string;
   defaultClass?: string;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 export const CustomLink = ({
@@ -22,6 +23,7 @@ export const CustomLink = ({
   to,
   isActiveClass = '',
   defaultClass = '',
+  onClick
 }: CustomLinkProps) => {
   const match = useMatch(to);
 
@@ -29,6 +31,7 @@ export const CustomLink = ({
     <NavLink
       to={to}
       className={() => SetActive({ isActive: !!match, isActiveClass, defaultClass })}
+      onClick={onClick}
     >
       {children}
     </NavLink>

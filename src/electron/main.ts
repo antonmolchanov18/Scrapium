@@ -35,8 +35,6 @@ export class MainApp {
   };
 
   async registerHandlers() {
-    console.log(await this.TasksDb.get("34000000"));
-    
     ipcMain.handle('task:create', async (event, data: any) => {
       console.log(data);
       
@@ -70,6 +68,16 @@ export class MainApp {
         const allTasks = await this.TasksDb.readAll();
 
         return allTasks;
+      } catch (error) {
+        return false;
+      }
+    })
+
+    ipcMain.handle('task:get-one', async (event, key) => {
+      try {
+        const task = await this.TasksDb.get(key);
+
+        return task;
       } catch (error) {
         return false;
       }

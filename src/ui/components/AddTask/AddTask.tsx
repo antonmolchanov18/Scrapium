@@ -1,4 +1,7 @@
 import { useForm, SubmitHandler } from 'react-hook-form';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { addTab } from '../../store/tabSlice'
 import './AddTask.scss';
 
 type FormData = {
@@ -7,6 +10,9 @@ type FormData = {
 };
 
 export const AddTask = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const {
     register,
     formState: { errors, isValid },
@@ -17,8 +23,19 @@ export const AddTask = () => {
   });
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    const task = await window.API.createTask(data);
-    console.log(task);
+    const apiResponse = await window.API.createTask(data);
+    const task = {
+      key: apiResponse.key,
+      data: apiResponse.data,
+    };
+  
+    const newTab = {
+      task, 
+      isActive: true,
+    };
+    console.log(apiResponse.data);
+    dispatch(addTab(newTab));
+    navigate('/');
     reset();
   };
 

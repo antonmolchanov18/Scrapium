@@ -1,0 +1,62 @@
+@use '../../styles/utils/variables' as vars;
+
+.parser-workplace {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  grid-template-rows: min-content 1fr 250px;
+  grid-template-areas: 
+    "header header"
+    "browser setup"
+    "preview setup";
+
+    &__header {
+      grid-area: header;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 25px;
+    }
+    
+    &__browser {
+      grid-area: browser;
+    }
+    
+    &__preview {
+      grid-area: preview;
+    }
+    
+    &__setup {
+      grid-area: setup;
+    }
+
+    &__navigation {
+      display: flex;
+      align-items: center;
+      gap: calc((30px / vars.$main-font-size) * 1rem);
+
+      &-buttons {
+        display: flex;
+        gap: calc((15px / vars.$main-font-size) * 1rem);
+      }
+    }
+
+    &__form {
+      width: 600px;
+      padding: 5px 10px;
+      display: flex;
+      align-items: center;
+      background-color: inherit;
+      border: 1px solid #DEDEDE;
+      border-radius: 20px;
+    }
+
+    .input-search {
+      width: 100%;
+      height: calc((25px / vars.$main-font-size) * 1rem);
+      padding-inline: 15px;
+    }
+}
+
+
+

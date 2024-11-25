@@ -15,6 +15,9 @@ export class WindowManager {
       minHeight: 768,
       webPreferences: {
         preload: getPreloadPath(),
+        webviewTag: true,
+        nodeIntegration: false,
+        contextIsolation: true
       },
     });
 

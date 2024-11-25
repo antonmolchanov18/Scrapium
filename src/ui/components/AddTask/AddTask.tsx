@@ -24,6 +24,8 @@ export const AddTask = () => {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     const apiResponse = await window.API.createTask(data);
+    console.log('Api', apiResponse);
+    
     const task = {
       key: apiResponse.key,
       data: apiResponse.data,
@@ -32,10 +34,11 @@ export const AddTask = () => {
     const newTab = {
       task, 
       isActive: true,
+      input: '',
+      isSwitchOn: false,
     };
-    console.log(apiResponse.data);
     dispatch(addTab(newTab));
-    navigate('/');
+    navigate('/parsing-workspace', {state: { key: apiResponse.key }});
     reset();
   };
 

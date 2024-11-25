@@ -3,6 +3,8 @@ import { createSlice, PayloadAction  } from '@reduxjs/toolkit';
 interface Tab {
   task: Task;
   isActive: boolean;
+  inputValue: string;
+  switchValue: boolean;
 }
 
 interface TaskData {
@@ -31,11 +33,25 @@ const tabsSlice = createSlice({
   initialState,
   reducers: {
     addTab: (state, action: PayloadAction<{ task: Task, isActive: boolean; }>) => {
+      const { task } = action.payload;
+
+      if (!task.key || !task.data) {
+        console.error('Invalid task provided:', task);
+        return;
+      }
+
+      console.log('Task redux', action.payload);
+      
       state.tabs.forEach(tab => {
         tab.isActive = false;
       });
 
-      state.tabs.push({ ...action.payload, isActive: true });
+      state.tabs.push({
+        task,
+        isActive: true,
+        inputValue: '',
+        switchValue: false,
+      });
     },
 
     openTab: (state, action: PayloadAction<string>) => {
@@ -44,6 +60,7 @@ const tabsSlice = createSlice({
       });
 
       const tab = state.tabs.find(tab => tab.task.key === action.payload);
+      
       if (tab) {
         tab.isActive = true;
       }
@@ -62,9 +79,26 @@ const tabsSlice = createSlice({
         }
       }
     },
+
+    updateTabState: (
+      state,
+      action: PayloadAction<{ key: string; inputValue: string; switchValue: boolean }>
+    ) => {
+      const { key, inputValue, switchValue } = action.payload;
+      console.log(key);
+      
+      const tab = state.tabs.find(tab => tab.task.key === key);
+      console.log('This tab', JSON.parse(JSON.stringify(state.tabs)));
+      
+
+      if (tab) {
+        tab.inputValue = inputValue;
+        tab.switchValue = switchValue;
+      }
+    },
   },
 })
 
-export const { addTab, openTab, closeTab } = tabsSlice.actions;
+export const { addTab, openTab, closeTab, updateTabState } = tabsSlice.actions;
 
 export default tabsSlice.reducer;

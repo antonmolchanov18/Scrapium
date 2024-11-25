@@ -14,20 +14,24 @@ export class MainApp {
   constructor() {
     this.windowManager = new WindowManager();
     this.eventManager = new EventManager();
-    this.TasksDb = new Database(path.join(app.getAppPath(), '/data/tasks'));
+    this.TasksDb = new Database(path.join('/dist-electron/data/tasks'));
     this.KeyDb = new Database(path.join(app.getAppPath(), '/data/keys'));
     app.on('ready', this.initializeApp);
     this.registerHandlers();
   }
 
-  private initializeApp = async (): Promise<void> => {
+  private initializeApp = async (): Promise<any> => {
     try {
+      console.log(path.join(app.getAppPath(), '/dist-electron/data/tasks'));
+      
+      console.log(this.TasksDb);
+      
       this.TasksDb.open();
       const mainWindow = await this.windowManager.createMainWindow(
         isDev() ? 'http://localhost:5123' : path.join(app.getAppPath(), '/dist-react/index.html')
       );
       this.eventManager.registerWindowEvents(mainWindow);
-      console.log('Application initialized successfully');
+      return 'Database open';
     } catch (err) {
       console.error('Initialization failed:', err);
       app.quit();
@@ -36,9 +40,8 @@ export class MainApp {
 
   async registerHandlers() {
     ipcMain.handle('task:create', async (event, data: any) => {
-      console.log(data);
-      
       try {
+        console.log('Received task data:', data);
         if (await this.TasksDb.isEmpty()) {
           const key = this.TasksDb.create32BitKey(0)
           await this.TasksDb.put(key, data);
@@ -59,7 +62,7 @@ export class MainApp {
           };
         }
       } catch (error) {
-        return false;
+        return error;
       }
     });
 

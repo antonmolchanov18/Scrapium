@@ -5,13 +5,17 @@ import { useNavigate } from 'react-router-dom';
 
 import TabCloseIcon from '../../assets/icons/tab-close-icon.svg?react';
 
+function getShortTitle(title: any, maxLength = 10) {
+  return title.length > maxLength ? title.slice(0, maxLength) : title;
+}
+
 export const Tab = ({ task, isActive }: TabItemProps) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleTabClick = () => {
     dispatch(openTab(task.key));
-    navigate('/');
+    navigate('/parsing-workspace', {state: { key: task.key }});
   };
 
   const handleTabClose = (e: React.MouseEvent) => {
@@ -22,7 +26,7 @@ export const Tab = ({ task, isActive }: TabItemProps) => {
   return (
     <li className={cn('tab__item', { 'tab__item--active': isActive })} onClick={handleTabClick}>
       <p className='tab__text'>
-        {task.data.title.slice(0, 10) + '...'}
+        {getShortTitle(task.data.title)}
       </p>
 
       {isActive && <TabCloseIcon className='tab__close-icon icon--small' onClick={handleTabClose}/>}

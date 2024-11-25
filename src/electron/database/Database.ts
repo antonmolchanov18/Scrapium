@@ -1,11 +1,21 @@
+import { app } from 'electron';
+import path from 'path';
 import { Level } from 'level';
+import { isDev } from '../util.js';
 
 export default class Database {
   private db: Level<string, any>;
   private isOpen: boolean = false;
 
   constructor(databasePath: string, encoding: string = 'json') {
-    this.db = new Level(databasePath, { valueEncoding: encoding });
+    this.db = new Level(
+      path.join(
+          app.getAppPath(),
+          isDev() ? '.' : '..',
+          databasePath
+      ),
+      { valueEncoding: encoding }
+  );
   }
 
   async open(onError?: (error: any) => void): Promise<void> {
@@ -16,7 +26,7 @@ export default class Database {
         console.log('Database opened successfully');
       }
     } catch (err) {
-      await this.handleError(err, onError, 'open');
+      this.handleError(err, onError, 'open');
     }
   }
 

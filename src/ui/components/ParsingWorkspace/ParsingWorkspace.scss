@@ -4,7 +4,7 @@
   height: 100%;
   display: grid;
   grid-template-columns: 1fr 200px;
-  grid-template-rows: min-content 1fr 250px;
+  grid-template-rows: min-content 1fr 350px;
   grid-template-areas: 
     "header header"
     "browser setup"
@@ -24,6 +24,7 @@
     
     &__preview {
       grid-area: preview;
+      overflow: hidden;
     }
     
     &__setup {

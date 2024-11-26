@@ -8,6 +8,7 @@ import './ParsingWorkspace.scss';
 import ArrowBackIcon from '../../assets/icons/arrow-back-icon.svg?react';
 import ArrowNextIcon from '../../assets/icons/arrow-next-icon.svg?react';
 import ReloadIcon from '../../assets/icons/reload-icon.svg?react';
+import { DataPreview } from '../DataPreview/DataPreview';
 
 export const ParsingWorkspace = () => {
   const { state } = useLocation();
@@ -20,7 +21,7 @@ export const ParsingWorkspace = () => {
   );
   
   if (!tab) {
-    return <div>Loading...</div>;
+    return ;
   }
   
   const { task } = tab;
@@ -48,8 +49,8 @@ export const ParsingWorkspace = () => {
           <form className='parser-workplace__form'>
             <input
               type="text" 
-              className='input-search' 
-              placeholder='Enter URL' 
+              className='input-search'
+              placeholder='Enter URL'
               value={tab.inputValue}
               onChange={handleInputChange}
             />
@@ -74,11 +75,11 @@ export const ParsingWorkspace = () => {
       <webview src={task.data.url} className='parser-workplace__browser'></webview>
 
       <div className="parser-workplace__preview">
-        <p>preview</p>
+        <DataPreview />
       </div>
 
       <div className="parser-workplace__setup">
-        setup
+        
       </div>
     </div>
   )

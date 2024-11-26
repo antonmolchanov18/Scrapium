@@ -73,10 +73,7 @@ const tabsSlice = createSlice({
 
         state.tabs.splice(tabIndex, 1);
 
-        if (state.tabs.length > 0) {
-          const lastTab = state.tabs[state.tabs.length - 1];
-          lastTab.isActive = true;
-        }
+        
       }
     },
 

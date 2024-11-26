@@ -10,3 +10,8 @@ body {
   font-family: vars.$main-font-family;
   font-weight: vars.$main-font-weight;
 }
+
+
+.ag-theme-quartz .ag-root-wrapper {
+  border-radius: 0 !important;
+}

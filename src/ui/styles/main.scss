@@ -3,7 +3,7 @@
 @use './utils/index' as utils;
 
 html {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 body {
@@ -14,4 +14,18 @@ body {
 
 .ag-theme-quartz .ag-root-wrapper {
   border-radius: 0 !important;
+}
+
+.ag-theme-quartz {
+  --ag-font-size: 1rem !important;
+}
+
+.react-switch-bg {
+  height: calc((20px / vars.$main-font-size) * 1rem) !important;
+  width: calc((38px / vars.$main-font-size) * 1rem) !important;
+}
+
+.react-switch-handle {
+  height: calc((12px / vars.$main-font-size) * 1rem) !important;
+  width: calc((12px / vars.$main-font-size) * 1rem) !important;
 }

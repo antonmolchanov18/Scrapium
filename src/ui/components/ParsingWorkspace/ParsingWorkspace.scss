@@ -3,8 +3,8 @@
 .parser-workplace {
   height: 100%;
   display: grid;
-  grid-template-columns: 1fr 200px;
-  grid-template-rows: min-content 1fr 350px;
+  grid-template-columns: 1fr 10%;
+  grid-template-rows: min-content 1fr 35%;
   grid-template-areas: 
     "header header"
     "browser setup"
@@ -14,7 +14,6 @@
       grid-area: header;
       display: flex;
       align-items: center;
-      justify-content: space-between;
       padding: 15px 25px;
     }
     
@@ -34,7 +33,10 @@
     &__navigation {
       display: flex;
       align-items: center;
-      gap: calc((30px / vars.$main-font-size) * 1rem);
+      min-width: 60vw;
+      margin: 0 auto;
+      padding-inline: 50px;
+      gap: calc((50px / vars.$main-font-size) * 1rem);
 
       &-buttons {
         display: flex;
@@ -43,13 +45,13 @@
     }
 
     &__form {
-      width: 600px;
+      width: 100%;
       padding: 5px 10px;
       display: flex;
       align-items: center;
       background-color: inherit;
       border: 1px solid #DEDEDE;
-      border-radius: 20px;
+      border-radius: calc((20px / vars.$main-font-size) * 1rem);
     }
 
     .input-search {

@@ -4,6 +4,10 @@ import { isDev } from './util.js';
 import { WindowManager } from './WindowManager/WindowManager.js';
 import { EventManager } from './EventManager/EventManager.js';
 import Database from './Database/Database.js';
+import { getPreloadPath } from './pathResolver.js';
+import * as fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 export class MainApp {
   private windowManager: WindowManager;
@@ -39,6 +43,10 @@ export class MainApp {
   };
 
   async registerHandlers() {
+    console.log("PRELOAD",getPreloadPath());
+    
+    console.log(path.join(app.getAppPath(), 'dist-electron', 'preload.js'));
+    
     ipcMain.handle('task:create', async (event, data: any) => {
       try {
         console.log('Received task data:', data);
@@ -92,6 +100,34 @@ export class MainApp {
 
         return allTasks;
       } catch (error) {
+        return false;
+      }
+    });
+
+
+    ipcMain.handle('preload:get-path', async (event, key) => {
+      try {
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = dirname(__filename);
+
+        console.log('dirname', __dirname);
+        console.log('dirname2', getPreloadPath());
+        
+        
+        const preloadPath = getPreloadPath();
+        const formattedPath = preloadPath.replace(/\\/g, '/');
+        const fullPath = 'file://' + formattedPath;
+        
+        // Перевірка, чи файл існує
+        if (fs.existsSync(preloadPath)) {
+          console.log('File Preload');
+          
+          return fullPath;
+        } else {
+          return null;
+        }
+      } catch (error) {
+        console.error(error);
         return false;
       }
     });

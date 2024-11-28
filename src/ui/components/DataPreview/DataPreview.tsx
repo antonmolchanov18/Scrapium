@@ -20,7 +20,7 @@ export const DataPreview = () => {
     filter: true,    // Default to filterable columns
   }), []);
 
-  const [rowData, setRowData] = useState<RowData[]>([ 
+  const [rowData] = useState<RowData[]>([ 
     { make: 'Tesla', model: 'Model Y', price: 64950, electric: true },
     { make: 'Ford', model: 'F-Series', price: 33850, electric: false },
     { make: 'Toyota', model: 'Corolla', price: 29600, electric: false },
@@ -38,7 +38,7 @@ export const DataPreview = () => {
     { make: 'Toyota', model: 'Corolla', price: 29600, electric: false },
   ]);
 
-  const [colDefs, setColDefs] = useState([
+  const [colDefs] = useState([
     { 
       headerName: 'No.', 
       valueGetter: 'node.rowIndex + 1', // Виводить порядковий номер
@@ -52,9 +52,9 @@ export const DataPreview = () => {
     { field: 'model', headerName: 'Model', sortable: true, filter: true, floatingFilter: true },
   ] as (ColDef<RowData>)[]);
 
-  const onExport = () => {
-    gridApi.current.api.exportDataAsCsv();
-  };
+  // const onExport = () => {
+  //   gridApi.current.api.exportDataAsCsv();
+  // };
 
   return (
     <div className="ag-theme-quartz table" style={{ height: '100%' }}>

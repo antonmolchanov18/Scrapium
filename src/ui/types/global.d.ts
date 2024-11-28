@@ -6,6 +6,8 @@ declare global {
       minimizeWindow: () => void;
       createTask: (data: data) => Promise<any>;
       getTask: (key: string) => any;
+      getPreloadPath: () => string | null;
+      getWebContents(): Electron.WebContents;
     };
   }
 

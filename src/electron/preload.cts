@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer, } = require('electron');
+const { contextBridge, ipcRenderer, app } = require('electron');
 
 contextBridge.exposeInMainWorld('API', {
   getStaticData: async () => {
@@ -19,4 +19,5 @@ contextBridge.exposeInMainWorld('API', {
   deleteTask: (key: any) => ipcRenderer.invoke('task:delete', key),
   getAllTask: () => ipcRenderer.invoke('task:get-all'),
   getTask: (key: any) => ipcRenderer.invoke('task:get-one', key),
+  getPreloadPath: () => ipcRenderer.invoke('preload:get-path'),
 })

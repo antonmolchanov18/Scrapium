@@ -25,7 +25,7 @@ const sidebarData = {
     {
       items: [
         {
-          to: '/sign-in',
+          to: '/authorization',
           icon: SignIcon,
           text: "Sign in",
         },

@@ -19,5 +19,9 @@ contextBridge.exposeInMainWorld('API', {
   deleteTask: (key: any) => ipcRenderer.invoke('task:delete', key),
   getAllTask: () => ipcRenderer.invoke('task:get-all'),
   getTask: (key: any) => ipcRenderer.invoke('task:get-one', key),
+  getSelectors: (key: any) => ipcRenderer.invoke('selectors:get-one', key),
   getPreloadPath: () => ipcRenderer.invoke('preload:get-path'),
+  postSelectors: (selector: any, key: string) => ipcRenderer.invoke('parser:get-selectors', selector),
+  startParser: (key: string) => ipcRenderer.invoke('parser:start', key),
+  setCurrentTaskKey: (key: string) => ipcRenderer.invoke('task:set-current', key),
 })

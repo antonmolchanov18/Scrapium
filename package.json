@@ -19,6 +19,7 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.3.0",
     "ag-grid-react": "^32.3.3",
+    "axios": "^1.7.8",
     "classnames": "^2.5.1",
     "level": "^8.0.1",
     "level-supports": "^6.0.0",

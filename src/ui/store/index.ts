@@ -1,10 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import tabReducer from './tabSlice'; // Імпортуйте ваш слайс
-
+import userSlice from './userSlice';
 // Створення Redux store
 const store = configureStore({
   reducer: {
     tabs: tabReducer, // Підключення ред'юсера
+    user: userSlice,
   },
 });
 

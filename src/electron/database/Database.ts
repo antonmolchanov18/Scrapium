@@ -39,7 +39,7 @@ export default class Database {
     throw err;
   }
 
-  async put(key: string, value: any, onError?: (error: any) => void): Promise<void> {
+  async put(key: string, value?: any, onError?: (error: any) => void): Promise<void> {
     try {
       await this.db.put(key, value);
     } catch (err) {

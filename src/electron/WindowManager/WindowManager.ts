@@ -16,8 +16,9 @@ export class WindowManager {
       webPreferences: {
         preload: getPreloadPath(),
         webviewTag: true,
-        nodeIntegration: true,
-        contextIsolation: true
+        nodeIntegration: false,
+        contextIsolation: true,
+        sandbox: true,
       },
     });
 

@@ -194,19 +194,19 @@ export class MainApp {
           console.error('No valid selectors found for task.');
           return false;
         }
-
+    
         const task = await this.TasksDb.get(key);
         if (!task || !task.url) {
           console.error('No valid task URL found.');
           return false;
         }
-
+    
         const browser = await puppeteer.launch({ headless: false, slowMo: 200 });
         const page = await browser.newPage();
-
+    
         // Переходимо на URL завдання
         await page.goto(task.url, { waitUntil: 'domcontentloaded' });
-
+    
         // Збираємо дані
         const data = await Promise.all(
           selectors.map(async (selector, index) => {
@@ -216,36 +216,39 @@ export class MainApp {
               const texts = await page.$$eval(selector, (elements) => {
                 return elements.map((el) => (el instanceof HTMLElement ? el.innerText.trim() : null));
               });
-
-              return { [keyName]: texts };
+    
+              // Фільтруємо порожні рядки
+              const filteredTexts = texts.filter(text => text && text.trim().length > 0);
+    
+              return { [keyName]: filteredTexts };
             } catch (error) {
               console.error(`Error processing selector "${selector}":`, error);
               return { selector, texts: [] };
             }
           })
         );
-
+    
         console.log('Parsed data:', data);
-
+    
         // Функція для прокручування сторінки
         const scrollPromise = async () => {
           try {
             const distance = 100; // Відстань прокручування
-            const delay = 10; // Час між прокрутками
+            const delay = 1; // Час між прокрутками
             let reachedEnd = false;
-
+    
             while (!reachedEnd) {
               console.log('Scrolling...');
               await page.evaluate(() => window.scrollBy(0, 500)); // Прокручування на 100 пікселів
               await new Promise(resolve => setTimeout(resolve, delay));
-
+    
               // Перевірка на наявність нових елементів внизу
               const hasNewContent = await page.evaluate(() => {
                 const docHeight = document.body.scrollHeight;
                 const scrollPosition = window.scrollY + window.innerHeight;
                 return scrollPosition < docHeight;
               });
-
+    
               if (!hasNewContent) {
                 console.log('Reached the end of the page.');
                 reachedEnd = true;
@@ -254,8 +257,8 @@ export class MainApp {
           } catch (error) {
             console.error('Error during scroll:', error);
           }
-       };
-
+        };
+    
         // Запускаємо прокручування одночасно з парсингом
         await Promise.all([
           scrollPromise(),
@@ -266,21 +269,35 @@ export class MainApp {
                 return elements.map((el) => (el instanceof HTMLElement ? el.innerText.trim() : null));
               });
     
-              return { texts };
+              // Фільтруємо порожні рядки
+              const filteredTexts = texts.filter(text => text && text.trim().length > 0);
+    
+              return { texts: filteredTexts };
             } catch (error) {
               console.error(`Error processing selector "${selector}":`, error);
               return { selector, texts: [] };
             }
           })
         ]);
-
+    
+        // Зберігаємо результат без порожніх рядків
         await this.ParserDb.put(key, data);
-        console.log('PASRSING RESULTS',await this.ParserDb.get(key));
+        console.log('PARSED RESULTS', await this.ParserDb.get(key));
     
         await browser.close();
         return data; // Повертаємо результат парсингу
       } catch (error) {
         console.error('Error in parser:start:', error);
+        return false;
+      }
+    });
+    
+
+    ipcMain.handle('parser:get-data', async (event, key) => {
+      try {
+        return await this.ParserDb.get(key);
+      } catch (error) {
+        console.error(error);
         return false;
       }
     });

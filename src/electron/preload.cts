@@ -24,4 +24,5 @@ contextBridge.exposeInMainWorld('API', {
   postSelectors: (selector: any, key: string) => ipcRenderer.invoke('parser:get-selectors', selector),
   startParser: (key: string) => ipcRenderer.invoke('parser:start', key),
   setCurrentTaskKey: (key: string) => ipcRenderer.invoke('task:set-current', key),
+  getParserData: (key: string) => ipcRenderer.invoke('parser:get-data', key),
 })

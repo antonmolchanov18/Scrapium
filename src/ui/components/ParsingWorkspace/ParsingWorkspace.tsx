@@ -13,6 +13,9 @@ import { DataPreview } from '../DataPreview/DataPreview';
 
 export const ParsingWorkspace = () => {
   const [preloadPath, setPreloadPath] = useState<string | null>(null);
+  const [parsingData, setParsingData] = useState<any[]>([]);
+  console.log("PARSINGDATA", parsingData);
+  
   const { state } = useLocation();
   const dispatch = useDispatch();
 
@@ -57,105 +60,44 @@ export const ParsingWorkspace = () => {
         webview.openDevTools();
         // @ts-ignore
         webview.executeJavaScript(`
-          const matchedElements = []; // Масив для збереження селекторів елементів
-          
+          const matchedElements = []; // Масив для збереження селекторів
           let taskKey = null;
-          
-          window.addEventListener('message', function(event) {
+        
+          // Отримання taskKey
+          window.addEventListener('message', (event) => {
             if (event.data.taskKey) {
-              taskKey = event.data.taskKey; // Призначаємо taskKey
-              console.log(taskKey);
+              taskKey = event.data.taskKey;
+              console.log('Task Key:', taskKey);
             }
           });
-          
-          document.addEventListener('click', function (event) {
-            const element = event.target; // Елемент, який натиснули
+        
+          // Функція для генерації селектора
+          function generateSelector(el) {
+            let selector = el.tagName.toLowerCase();
+            if (el.id) selector += '#' + el.id;
+            if (el.classList.length > 0) selector += '.' + Array.from(el.classList).join('.');
+            return selector;
+          }
+        
+          // Обробка кліку
+          document.addEventListener('click', (event) => {
             event.preventDefault();
-            // Функція для перевірки, чи елемент містить текст
-            function isTextOnlyElement(el) {
-              return el.nodeType === Node.TEXT_NODE && el.textContent.trim() !== '';
+            const element = event.target;
+            const selector = generateSelector(element);
+        
+            if (!matchedElements.includes(selector)) {
+              matchedElements.push(selector);
+              element.style.border = '2px solid green'; // Підсвічуємо елемент
+              window.API.postSelectors(selector); // Надсилаємо селектор
+            } else {
+              matchedElements.splice(matchedElements.indexOf(selector), 1);
+              element.style.border = ''; // Забираємо підсвічення
+              window.API.postSelectors(selector); // Можливо, видаляємо селектор на сервері
             }
-
-            // Функція для генерації селектора на основі елементу
-            function generateSelector(elementInfo) {
-              let selector = elementInfo.tagName ? elementInfo.tagName.toLowerCase() : ''; // Додаємо тег, якщо є
-
-              // Додаємо ID, якщо не null і не порожній
-              if (elementInfo.id) {
-                selector += \`#\${elementInfo.id}\`;
-              }
-
-              // Додаємо класи, якщо не null і є хоча б один клас
-              if (elementInfo.classList && elementInfo.classList.length > 0) {
-                selector += \`.\${elementInfo.classList.join('.')}\`;
-              }
-
-              // Додаємо data-атрибути, якщо вони не null
-              if (elementInfo.dataAttributes) {
-                for (const [key, value] of Object.entries(elementInfo.dataAttributes)) {
-                  if (value) {
-                    selector += \`[data-\${key}="\${value}"]\`;
-                  }
-                }
-              }
-
-              return selector || null; // Повертаємо селектор або null, якщо не вдалося створити
-            }
-
-            // Функція для збереження або видалення інформації про елемент
-            function toggleElementInfo(el) {
-              const elementInfo = {
-                tagName: el.tagName,
-                id: el.id || null,
-                classList: [...el.classList].length === 0 ? null : [...el.classList],
-                dataAttributes: Object.keys(el.dataset).length > 0 ? el.dataset : null,
-            };
-
-            const selector = generateSelector(elementInfo); // Генеруємо селектор
-
-            if (selector) {
-              const index = matchedElements.indexOf(selector);
-              if (index === -1) {
-                  matchedElements.push(selector); // Додаємо селектор у масив, якщо його ще немає
-                  window.API.postSelectors(selector)
-              } else {
-                  matchedElements.splice(index, 1); // Видаляємо селектор з масиву, якщо він вже є
-                  el.style.border = '';
-                  window.API.postSelectors(selector)
-                }
-              }
-            }
-
-            // Функція для перевірки, чи елемент містить тільки текст
-            function checkElement(el) {
-              if (el.nodeType === Node.ELEMENT_NODE) {
-                for (let child of el.childNodes) {
-                  if (isTextOnlyElement(child)) {
-                    el.style.border = '1px solid green'; // Підсвічуємо елемент
-                    toggleElementInfo(el); // Зберігаємо або видаляємо селектор елементу
-                    break; // Досить, якщо знайдено хоча б один текстовий нащадок
-                  }
-                }
-              }
-            }
-
-            // Перевіряємо нащадків елемента
-            function checkDescendants(el) {
-              checkElement(el); // Перевіряємо сам елемент
-
-              // Перевіряємо всі дочірні елементи
-              for (let child of el.childNodes) {
-                if (child.nodeType === Node.ELEMENT_NODE) {
-                  checkDescendants(child); // Рекурсивно перевіряємо кожного нащадка
-                }
-              }
-            }
-
-            // Починаємо перевірку з натискання на елемент
-            checkDescendants(element);
-
-            console.log(matchedElements); // Для перевірки результату у консолі
-          });`)
+        
+            console.log('Selected Elements:', matchedElements);
+          });
+        `)
           .then(() => console.log("JavaScript executed"))
           .catch(() => console.error("Error executing JavaScript"));
       };
@@ -195,6 +137,8 @@ export const ParsingWorkspace = () => {
     try {
       const result = await window.API.startParser(key);
       console.log("Parser started successfully:", result);
+      // Assuming the result is in the format [{field_1: Array(1)}, {field_2: Array(179)}, {field_3: Array(179)}]
+      setParsingData(result); // Update the state with the parsing result
     } catch (error) {
       console.error("Error starting parser:", error);
     }
@@ -255,7 +199,7 @@ export const ParsingWorkspace = () => {
           )}
 
           <div className="parser-workplace__preview">
-            <DataPreview />
+            <DataPreview data={parsingData}/>
           </div>
 
           <div className="parser-workplace__setup"></div>

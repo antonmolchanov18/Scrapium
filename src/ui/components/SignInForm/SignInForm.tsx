@@ -1,4 +1,7 @@
-import { useForm } from "react-hook-form";
+// src/SignInForm/SignInForm.tsx
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { login } from '../../api/auth'; // Імпортуємо функцію login
 
 interface SignInFormProps {
   onSubmit: (data: any) => void;
@@ -12,9 +15,16 @@ const SignInForm: React.FC<SignInFormProps> = ({ onSubmit }) => {
     reset,
   } = useForm();
 
-  const handleSignIn = (data: any) => {
-    onSubmit(data);
-    reset(); // Скидаємо форму після відправки
+  const [error, setError] = useState('');
+
+  const handleSignIn = async (data: any) => {
+    try {
+      const token = await login(data.signInName, data.signInPassword);
+      onSubmit(token); // Передаємо токен для подальшого використання
+      reset(); // Скидаємо форму після відправки
+    } catch (err) {
+      setError('Invalid username or password');
+    }
   };
 
   return (
@@ -33,6 +43,7 @@ const SignInForm: React.FC<SignInFormProps> = ({ onSubmit }) => {
       />
       {errors.signInPassword && <p>Password is required</p>}
       <button type="submit">Sign In</button>
+      {error && <p>{error}</p>}
     </form>
   );
 };

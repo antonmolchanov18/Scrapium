@@ -29,21 +29,21 @@ const SignInForm: React.FC<SignInFormProps> = ({ onSubmit }) => {
 
   return (
     <form onSubmit={handleSubmit(handleSignIn)}>
-      <h1>Sign In</h1>
+      <h1 className='authorization__title'>Sign In</h1>
       <input
         type="text"
         placeholder="Name"
         {...register("signInName", { required: true })}
       />
-      {errors.signInName && <p>Name is required</p>}
+      {errors.signInName && <p className='error-text'>Name is required</p>}
       <input
         type="password"
         placeholder="Password"
         {...register("signInPassword", { required: true })}
       />
-      {errors.signInPassword && <p>Password is required</p>}
+      {errors.signInPassword && <p className='error-text'>Password is required</p>}
       <button type="submit">Sign In</button>
-      {error && <p>{error}</p>}
+      {error && <p className='error-text'>{error}</p>}
     </form>
   );
 };

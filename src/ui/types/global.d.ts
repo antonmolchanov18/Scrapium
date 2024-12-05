@@ -5,7 +5,9 @@ declare global {
       maximizeWindow: () => void;
       minimizeWindow: () => void;
       createTask: (data: data) => Promise<any>;
+      deleteTask: (key: string) => Promise<any>;
       getTask: (key: string) => any;
+      getAllTask: () => Promise<any>;
       getPreloadPath: () => string | null;
       getWebContents(): Electron.WebContents;
       startParser: (key: string) => Promise<any>;

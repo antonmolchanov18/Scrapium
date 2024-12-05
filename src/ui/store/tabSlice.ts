@@ -42,10 +42,17 @@ const tabsSlice = createSlice({
 
       console.log('Task redux', action.payload);
       
-      state.tabs.forEach(tab => {
-        tab.isActive = false;
-      });
+      // Перевірка на наявність таба в state
+      const existingTab = state.tabs.find(tab => tab.task.key === task.key);
+      if (existingTab) {
+        // Якщо таб вже є, оновлюємо його стан
+        state.tabs.forEach(tab => tab.isActive = false); // деактивуємо всі таби
+        existingTab.isActive = true; // активуємо існуючий таб
+        return; // не додаємо новий таб
+      }
 
+      // Якщо таба немає, додаємо новий
+      state.tabs.forEach(tab => tab.isActive = false); // деактивуємо всі таби
       state.tabs.push({
         task,
         isActive: true,

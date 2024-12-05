@@ -31,21 +31,21 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSubmit }) => {
 
   return (
     <form onSubmit={handleSubmit(handleSignUp)}>
-      <h1>Create Account</h1>
+      <h1 className='authorization__title'>Create Account</h1>
       <input
         type="text"
         placeholder="Name"
         {...formRegister("signUpName", { required: true })}
       />
-      {errors.signUpName && <p>Name is required</p>}
+      {errors.signUpName && <p className="error-text">Name is required</p>}
       <input
         type="password"
         placeholder="Password"
         {...formRegister("signUpPassword", { required: true })}
       />
-      {errors.signUpPassword && <p>Password is required</p>}
+      {errors.signUpPassword && <p className="error-text">Password is required</p>}
       <button type="submit">Sign Up</button>
-      {errorMessage && <p>{errorMessage}</p>} {/* Виведення помилки */}
+      {errorMessage && <p className="error-text">{errorMessage}</p>} {/* Виведення помилки */}
     </form>
   );
 };

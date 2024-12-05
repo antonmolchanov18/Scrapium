@@ -21,6 +21,8 @@ export const DataPreview = ({ data }: { data: Array<{ [key: string]: any }> }) =
   const [colDefs, setColDefs] = useState<ColDef<RowData>[]>([]);
 
   function prepareData(data: Array<{ [key: string]: any }>) {
+    console.log('DATA', data);
+
     const maxLength = data.reduce((max, item) => {
       for (const key in item) {
         if (Array.isArray(item[key])) {
@@ -37,7 +39,7 @@ export const DataPreview = ({ data }: { data: Array<{ [key: string]: any }> }) =
     const columns: ColDef<RowData>[] = [
       {
         headerName: 'No.',
-        valueGetter: 'node.rowIndex + 1',
+        field: 'id',
         maxWidth: 100,
       }
     ];
@@ -66,15 +68,14 @@ export const DataPreview = ({ data }: { data: Array<{ [key: string]: any }> }) =
     setColDefs(columns);
 
     // Підготовка рядків
-    const rows: RowData[] = []; // Використовуємо RowData для кожного рядка
+    const rows: RowData[] = [];
 
     for (let i = 0; i < maxLength; i++) {
-      const row: RowData = {};
+      const row: RowData = {id: i + 1};
 
       data.forEach((obj) => {
         for (const key in obj) {
           const value = obj[key];
-          // Якщо є масив, додаємо значення за індексом i, або null, якщо індекс вийшов за межі масиву
           row[key] = Array.isArray(value) ? (value[i] !== undefined ? value[i] : null) : (value !== undefined ? value : null);
         }
       });
@@ -85,21 +86,31 @@ export const DataPreview = ({ data }: { data: Array<{ [key: string]: any }> }) =
     setRowData(rows);
   }
 
-  // Викликаємо prepareData, коли дані змінюються
   useEffect(() => {
     if (data && data.length > 0) {
       prepareData(data);
     }
   }, [data]);
 
+  const exportToCSV = () => {
+    if (gridApi.current) {
+      gridApi.current.api.exportDataAsCsv();
+    }
+  };
+
   return (
-    <div className="ag-theme-quartz table" style={{ height: '100%' }}>
-      <AgGridReact
-        ref={gridApi}
-        rowData={rowData}
-        columnDefs={colDefs}
-        defaultColDef={defaultColDef}
-      />
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <button onClick={exportToCSV} style={{ marginBottom: '10px', alignSelf: 'flex-end' }}>
+        Зберегти у CSV
+      </button>
+      <div className="ag-theme-quartz table" style={{ height: '100%' }}>
+        <AgGridReact
+          ref={gridApi}
+          rowData={rowData}
+          columnDefs={colDefs}
+          defaultColDef={defaultColDef}
+        />
+      </div>
     </div>
   );
 };

@@ -1,6 +1,20 @@
 .authorization {
+  font-family: 'Montserrat', sans-serif;
+
+  &__title {
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  &__description {
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0.3px;
+    margin: 35px 0;
+  }
+
   &__container{
-    position: absolute;
+    position: fixed;
     top: 50%; /* Центрує по вертикалі */
     left: 50%; /* Центрує по горизонталі */
     transform: translate(-50%, -50%); /* Компенсує розміри елемента */
@@ -11,13 +25,6 @@
     width: 768px;
     max-width: 100%;
     min-height: 480px;
-
-    & p {
-      font-size: 14px;
-      line-height: 20px;
-      letter-spacing: 0.3px;
-      margin: 20px 0;
-    }
 
     & span {
       font-size: 12px;
@@ -62,7 +69,7 @@
     & input{
       background-color: #eee;
       border: none;
-      margin: 8px 0;
+      margin: 10px 0;
       padding: 10px 15px;
       font-size: 13px;
       border-radius: 8px;
@@ -71,7 +78,7 @@
     }
   }
 
-  &__form-container{
+  &__form-container {
     position: absolute;
     top: 0;
     height: 100%;
@@ -175,10 +182,6 @@
       opacity: 1;
       z-index: 5;
   }
-}
-
-.social-icons{
-  margin: 20px 0;
 }
 
 .social-icons a{

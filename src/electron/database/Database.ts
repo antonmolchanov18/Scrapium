@@ -71,11 +71,13 @@ export default class Database {
     }
   }
 
-  async delete(key: string, onError?: (error: any) => void): Promise<void> {
+  async delete(key: string, onError?: (error: any) => void): Promise<boolean> {
     try {
       await this.db.del(key);
+      return true;
     } catch (err) {
       await this.handleError(err, onError, 'delete');
+      return false;
     }
   }
 

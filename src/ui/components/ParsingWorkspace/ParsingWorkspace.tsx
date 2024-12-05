@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useLayoutEffect  } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateTabState } from '../../store/tabSlice';
+import { updateTabState, addTab } from '../../store/tabSlice';
 import { RootState } from '../../store';
 import Switch from "react-switch";
 import './ParsingWorkspace.scss';
@@ -14,13 +14,12 @@ import { DataPreview } from '../DataPreview/DataPreview';
 export const ParsingWorkspace = () => {
   const [preloadPath, setPreloadPath] = useState<string | null>(null);
   const [parsingData, setParsingData] = useState<any[]>([]);
-  console.log("PARSINGDATA", parsingData);
   
   const { state } = useLocation();
   const dispatch = useDispatch();
 
   const taskKey = state?.key;
-
+  
   useEffect(() => {
     const setTaskKey = async () => {
       if (taskKey) {
@@ -34,6 +33,7 @@ export const ParsingWorkspace = () => {
   const tab = useSelector((state: RootState) =>
     state.tabs.tabs.find((tab) => tab.task.key === taskKey)
   );
+  console.log('TAB', tab);
 
   // UseEffect to fetch preloadPath
   useEffect(() => {
@@ -56,8 +56,6 @@ export const ParsingWorkspace = () => {
         //@ts-ignore
         webview.send("taskKey", taskKey);
         console.log("WebView is ready");
-        //@ts-ignore
-        webview.openDevTools();
         // @ts-ignore
         webview.executeJavaScript(`
           const matchedElements = []; // Масив для збереження селекторів

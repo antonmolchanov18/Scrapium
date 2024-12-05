@@ -17,6 +17,7 @@ export class MainApp {
   private SelectorsDb: Database;
   private ParserDb: Database;
   private currentTaskKey: string | null = null;
+  private userTimeZone: string;
 
   constructor() {
     this.windowManager = new WindowManager();
@@ -24,6 +25,7 @@ export class MainApp {
     this.TasksDb = new Database(path.join('/dist-electron/data/tasks'));
     this.SelectorsDb = new Database(path.join('/dist-electron/data/selectors'));
     this.ParserDb = new Database(path.join('/dist-electron/data/parser'));
+    this.userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     app.on('ready', this.initializeApp);
     this.registerHandlers();
   }
@@ -51,27 +53,41 @@ export class MainApp {
       try {
         if (await this.TasksDb.isEmpty()) {
           const key = this.TasksDb.create32BitKey(0)
+          const createdDate = new Date().toLocaleString(undefined, { timeZone: this.userTimeZone });
 
-          await this.TasksDb.put(key, data);
+          const taskData = {
+            ...data,
+            createdDate,
+            status: 'Pending',
+          }
+
+          await this.TasksDb.put(key, taskData);
           await this.SelectorsDb.put(key, []);
 
           return {
             key: key,
             data: await this.TasksDb.get(key),
-            selectorKey: key,
           };
         } else {
+          
           const lastRecord = await this.TasksDb.getLastRecord();
           let lastKey: number = this.TasksDb.decode32BitKey(lastRecord.key);
           const key = this.TasksDb.create32BitKey(lastKey + 1);
-          await this.TasksDb.put(key, data);
+          const createdDate = new Date().toLocaleString(undefined, { timeZone: this.userTimeZone });
+
+          const taskData = {
+            ...data,
+            createdDate,
+            status: 'Pending',
+          }
+
+          await this.TasksDb.put(key, taskData);
           await this.SelectorsDb.put(key, []);
 
 
           return {
             key: key,
             data: await this.TasksDb.get(key),
-            keySelector: key
           };
         }
       } catch (error) {
@@ -119,11 +135,13 @@ export class MainApp {
       }
     });
 
-    ipcMain.handle('task:get-delete', async (event, key) => {
+    ipcMain.handle('task:delete', async (event, key) => {
       try {
-        const allTasks = await this.TasksDb.delete(key);
+        const deleteTask = await this.TasksDb.delete(key);
+        await this.SelectorsDb.delete(key);
+        await this.ParserDb.delete(key);
 
-        return allTasks;
+        return deleteTask;
       } catch (error) {
         return false;
       }
@@ -179,6 +197,9 @@ export class MainApp {
         // Зберігаємо оновлений масив селекторів у базі даних
         await this.SelectorsDb.put(this.currentTaskKey, storedSelectors);
 
+        const task = await this.TasksDb.get(this.currentTaskKey);
+        await this.TasksDb.put(this.currentTaskKey, { ...task, status: 'Ready', message: 'Selectors are ready for parsing.' });
+
         console.log('Updated selectors:', storedSelectors);
         return storedSelectors; // Повертаємо оновлений масив
       } catch (error) {
@@ -192,14 +213,20 @@ export class MainApp {
         const selectors = await this.SelectorsDb.get(key);
         if (!selectors || !Array.isArray(selectors)) {
           console.error('No valid selectors found for task.');
+          const task = await this.TasksDb.get(key);
+          await this.TasksDb.put(key, { ...task, status: 'Error', message: 'No valid selectors found.' });
           return false;
         }
     
         const task = await this.TasksDb.get(key);
         if (!task || !task.url) {
           console.error('No valid task URL found.');
+          await this.TasksDb.put(key, { ...task, status: 'Error', message: 'No valid task URL found.' });
           return false;
         }
+    
+        // Оновлюємо статус на "в процесі", зберігаючи інші дані задачі
+        await this.TasksDb.put(key, { ...task, status: 'Running', message: 'Task is in progress.' });
     
         const browser = await puppeteer.launch({ headless: false, slowMo: 200 });
         const page = await browser.newPage();
@@ -212,14 +239,11 @@ export class MainApp {
           selectors.map(async (selector, index) => {
             try {
               const keyName = `field_${index + 1}`;
-              // Витягуємо текст із кожного елемента за селектором
               const texts = await page.$$eval(selector, (elements) => {
                 return elements.map((el) => (el instanceof HTMLElement ? el.innerText.trim() : null));
               });
     
-              // Фільтруємо порожні рядки
               const filteredTexts = texts.filter(text => text && text.trim().length > 0);
-    
               return { [keyName]: filteredTexts };
             } catch (error) {
               console.error(`Error processing selector "${selector}":`, error);
@@ -230,67 +254,24 @@ export class MainApp {
     
         console.log('Parsed data:', data);
     
-        // Функція для прокручування сторінки
-        const scrollPromise = async () => {
-          try {
-            const distance = 100; // Відстань прокручування
-            const delay = 1; // Час між прокрутками
-            let reachedEnd = false;
-    
-            while (!reachedEnd) {
-              console.log('Scrolling...');
-              await page.evaluate(() => window.scrollBy(0, 500)); // Прокручування на 100 пікселів
-              await new Promise(resolve => setTimeout(resolve, delay));
-    
-              // Перевірка на наявність нових елементів внизу
-              const hasNewContent = await page.evaluate(() => {
-                const docHeight = document.body.scrollHeight;
-                const scrollPosition = window.scrollY + window.innerHeight;
-                return scrollPosition < docHeight;
-              });
-    
-              if (!hasNewContent) {
-                console.log('Reached the end of the page.');
-                reachedEnd = true;
-              }
-            }
-          } catch (error) {
-            console.error('Error during scroll:', error);
-          }
-        };
-    
-        // Запускаємо прокручування одночасно з парсингом
-        await Promise.all([
-          scrollPromise(),
-          ...selectors.map(async (selector) => {
-            try {
-              // Витягуємо текст із кожного елемента за селектором
-              const texts = await page.$$eval(selector, (elements) => {
-                return elements.map((el) => (el instanceof HTMLElement ? el.innerText.trim() : null));
-              });
-    
-              // Фільтруємо порожні рядки
-              const filteredTexts = texts.filter(text => text && text.trim().length > 0);
-    
-              return { texts: filteredTexts };
-            } catch (error) {
-              console.error(`Error processing selector "${selector}":`, error);
-              return { selector, texts: [] };
-            }
-          })
-        ]);
-    
-        // Зберігаємо результат без порожніх рядків
+        // Зберігаємо результат
         await this.ParserDb.put(key, data);
-        console.log('PARSED RESULTS', await this.ParserDb.get(key));
+    
+        // Оновлюємо статус на "завершено"
+        await this.TasksDb.put(key, { ...task, status: 'Completed', message: 'Task completed successfully.' });
     
         await browser.close();
         return data; // Повертаємо результат парсингу
       } catch (error) {
         console.error('Error in parser:start:', error);
+    
+        // Оновлюємо статус на "помилка", зберігаючи інші дані задачі
+        const task = await this.TasksDb.get(key);
+        await this.TasksDb.put(key, { ...task, status: 'Error', message: 'Error'});
         return false;
       }
     });
+    
     
 
     ipcMain.handle('parser:get-data', async (event, key) => {

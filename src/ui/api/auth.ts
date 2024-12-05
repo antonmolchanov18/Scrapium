@@ -28,8 +28,20 @@ export const login = async (username: string, password: string) => {
       username,
       password,
     });
-    return response.data.token; // Припускаємо, що сервер повертає токен
-  } catch (error) {
+    const token = response.data.token;
+
+    // Виведення токена у консоль
+    console.log('Token received:', token);
+
+    return token;
+  } catch (error: any) {
+    if (error.response) {
+      console.error('Login error response:', error.response.data);
+    } else if (error.request) {
+      console.error('Login error request:', error.request);
+    } else {
+      console.error('Login error message:', error.message);
+    }
     throw error;
   }
 };

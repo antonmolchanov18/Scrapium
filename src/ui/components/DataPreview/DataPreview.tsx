@@ -21,7 +21,6 @@ export const DataPreview = ({ data }: { data: Array<{ [key: string]: any }> }) =
   const [colDefs, setColDefs] = useState<ColDef<RowData>[]>([]);
 
   function prepareData(data: Array<{ [key: string]: any }>) {
-    console.log('DATA', data);
 
     const maxLength = data.reduce((max, item) => {
       for (const key in item) {
@@ -29,6 +28,7 @@ export const DataPreview = ({ data }: { data: Array<{ [key: string]: any }> }) =
           max = Math.max(max, item[key].length);
         }
       }
+
       return max;
     }, 0);
 
@@ -54,10 +54,22 @@ export const DataPreview = ({ data }: { data: Array<{ [key: string]: any }> }) =
             filter: true,
             floatingFilter: true,
             comparator: (valueA, valueB) => {
-              if (valueA === null || valueA === undefined) return 1;
-              if (valueB === null || valueB === undefined) return -1;
-              if (valueA < valueB) return -1;
-              if (valueA > valueB) return 1;
+              if (valueA === null || valueA === undefined) {
+                return 1
+              };
+
+              if (valueB === null || valueB === undefined) {
+                return -1
+              };
+
+              if (valueA < valueB) {
+                return -1
+              };
+
+              if (valueA > valueB) {
+                return 1
+              };
+
               return 0;
             }
           });
@@ -67,7 +79,6 @@ export const DataPreview = ({ data }: { data: Array<{ [key: string]: any }> }) =
 
     setColDefs(columns);
 
-    // Підготовка рядків
     const rows: RowData[] = [];
 
     for (let i = 0; i < maxLength; i++) {
@@ -103,6 +114,7 @@ export const DataPreview = ({ data }: { data: Array<{ [key: string]: any }> }) =
       <button onClick={exportToCSV} style={{ marginBottom: '10px', alignSelf: 'flex-end' }}>
         Зберегти у CSV
       </button>
+
       <div className="ag-theme-quartz table" style={{ height: '100%' }}>
         <AgGridReact
           ref={gridApi}

@@ -1,13 +1,11 @@
 import { app, ipcMain } from 'electron';
 import path from 'path';
 import { isDev } from './util.js';
-import { WindowManager } from './WindowManager/WindowManager.js';
-import { EventManager } from './EventManager/EventManager.js';
-import Database from './Database/Database.js';
 import { getPreloadPath } from './pathResolver.js';
 import * as fs from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { EventManager } from './EventManager/EventManager.js';
+import { WindowManager } from './WindowManager/WindowManager.js';
+import Database from './Database/Database.js';
 import puppeteer from 'puppeteer';
 
 export class MainApp {
@@ -32,10 +30,6 @@ export class MainApp {
 
   private initializeApp = async (): Promise<any> => {
     try {
-      console.log(path.join(app.getAppPath(), '/dist-electron/data/tasks'));
-      
-      console.log(this.TasksDb);
-      
       this.TasksDb.open();
       const mainWindow = await this.windowManager.createMainWindow(
         isDev() ? 'http://localhost:5123' : path.join(app.getAppPath(), '/dist-react/index.html')
@@ -95,15 +89,17 @@ export class MainApp {
       }
     });
 
-    ipcMain.handle('task:get-all', async (event) => {
+    ipcMain.handle('task:delete', async (event, key) => {
       try {
-        const allTasks = await this.TasksDb.readAll();
+        const deleteTask = await this.TasksDb.delete(key);
+        await this.SelectorsDb.delete(key);
+        await this.ParserDb.delete(key);
 
-        return allTasks;
+        return deleteTask;
       } catch (error) {
         return false;
       }
-    })
+    });
 
     ipcMain.handle('task:get-one', async (event, key) => {
       try {
@@ -115,11 +111,11 @@ export class MainApp {
       }
     });
 
-    ipcMain.handle('selectors:get-one', async (event, key) => {
+    ipcMain.handle('task:get-all', async (event) => {
       try {
-        const selector = await this.SelectorsDb.get(key);
+        const allTasks = await this.TasksDb.readAll();
 
-        return selector;
+        return allTasks;
       } catch (error) {
         return false;
       }
@@ -135,18 +131,15 @@ export class MainApp {
       }
     });
 
-    ipcMain.handle('task:delete', async (event, key) => {
+    ipcMain.handle('selectors:get-one', async (event, key) => {
       try {
-        const deleteTask = await this.TasksDb.delete(key);
-        await this.SelectorsDb.delete(key);
-        await this.ParserDb.delete(key);
+        const selector = await this.SelectorsDb.get(key);
 
-        return deleteTask;
+        return selector;
       } catch (error) {
         return false;
       }
     });
-
 
     ipcMain.handle('preload:get-path', async (event, key) => {
       try {
@@ -155,8 +148,6 @@ export class MainApp {
         const fullPath = 'file://' + formattedPath;
 
         if (fs.existsSync(preloadPath)) {
-          console.log('File Preload');
-
           return fullPath;
         } else {
           return null;
@@ -180,31 +171,24 @@ export class MainApp {
           console.error('Stored selectors are not an array');
           return false;
         }
-        console.log("SELECTOR", selectors);
 
         const index = storedSelectors.indexOf(selectors);
 
         if (index === -1 && selectors !== undefined) {
-          // Якщо селектор не знайдений, додаємо його в масив
-          console.log(selectors);
-
           storedSelectors.push(selectors);
         } else if (index !== -1) {
-          // Якщо селектор існує, видаляємо його з масиву
           storedSelectors.splice(index, 1);
         }
 
-        // Зберігаємо оновлений масив селекторів у базі даних
         await this.SelectorsDb.put(this.currentTaskKey, storedSelectors);
 
         const task = await this.TasksDb.get(this.currentTaskKey);
         await this.TasksDb.put(this.currentTaskKey, { ...task, status: 'Ready', message: 'Selectors are ready for parsing.' });
 
-        console.log('Updated selectors:', storedSelectors);
-        return storedSelectors; // Повертаємо оновлений масив
+        return storedSelectors;
       } catch (error) {
         console.error(error);
-        return false; // Повертаємо false, якщо сталася помилка
+        return false;
       }
     });
 
@@ -217,24 +201,21 @@ export class MainApp {
           await this.TasksDb.put(key, { ...task, status: 'Error', message: 'No valid selectors found.' });
           return false;
         }
-    
+
         const task = await this.TasksDb.get(key);
         if (!task || !task.url) {
           console.error('No valid task URL found.');
           await this.TasksDb.put(key, { ...task, status: 'Error', message: 'No valid task URL found.' });
           return false;
         }
-    
-        // Оновлюємо статус на "в процесі", зберігаючи інші дані задачі
+
         await this.TasksDb.put(key, { ...task, status: 'Running', message: 'Task is in progress.' });
-    
+
         const browser = await puppeteer.launch({ headless: false, slowMo: 200 });
         const page = await browser.newPage();
-    
-        // Переходимо на URL завдання
+
         await page.goto(task.url, { waitUntil: 'domcontentloaded' });
-    
-        // Збираємо дані
+
         const data = await Promise.all(
           selectors.map(async (selector, index) => {
             try {
@@ -242,7 +223,7 @@ export class MainApp {
               const texts = await page.$$eval(selector, (elements) => {
                 return elements.map((el) => (el instanceof HTMLElement ? el.innerText.trim() : null));
               });
-    
+
               const filteredTexts = texts.filter(text => text && text.trim().length > 0);
               return { [keyName]: filteredTexts };
             } catch (error) {
@@ -251,28 +232,20 @@ export class MainApp {
             }
           })
         );
-    
-        console.log('Parsed data:', data);
-    
-        // Зберігаємо результат
+
         await this.ParserDb.put(key, data);
-    
-        // Оновлюємо статус на "завершено"
         await this.TasksDb.put(key, { ...task, status: 'Completed', message: 'Task completed successfully.' });
-    
         await browser.close();
-        return data; // Повертаємо результат парсингу
+
+        return data;
       } catch (error) {
         console.error('Error in parser:start:', error);
-    
-        // Оновлюємо статус на "помилка", зберігаючи інші дані задачі
+
         const task = await this.TasksDb.get(key);
         await this.TasksDb.put(key, { ...task, status: 'Error', message: 'Error'});
         return false;
       }
     });
-    
-    
 
     ipcMain.handle('parser:get-data', async (event, key) => {
       try {

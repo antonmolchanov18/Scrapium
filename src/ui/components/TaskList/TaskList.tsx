@@ -1,12 +1,12 @@
 import { useMemo, useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { AgGridReact } from 'ag-grid-react';
+import { ColDef } from 'ag-grid-community';
+import { addTab } from '../../store/tabSlice';
+
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
-import { ColDef } from 'ag-grid-community';
-import { useNavigate } from 'react-router-dom';
-import { addTab } from '../../store/tabSlice';
-import { useDispatch } from 'react-redux';
-
 
 import IconDelete from '../../assets/icons/delete-icon.svg?react';
 import IconOpen from '../../assets/icons/open-icon.svg?react';
@@ -35,7 +35,7 @@ export const TaskList = () => {
     await window.API.deleteTask(keyTask);
   };
 
-  const handleOpenTask = async (keyTask: string) => { // Отримання ключа завдання
+  const handleOpenTask = async (keyTask: string) => {
     
     const fetchedTab = await window.API.getTask(keyTask);
 
@@ -90,24 +90,21 @@ export const TaskList = () => {
     const fetchData = async () => {
       try {
         const allTask = await window.API.getAllTask();
-        console.log('All tasks:', allTask);
         
-        // Assuming `allTask` is an array of objects with a structure like `{ key: "00000000", value: { title, url, createdDate, status } }`
         const rows = allTask.map((obj: any, index: number) => {
-          console.log(obj.key);
-          
-          return  {
-          id: index + 1, // Add index as ID or use a unique identifier from the API
-          taskName: obj.value?.title, // Accessing the title inside the value object
-          status: obj.value?.status, // Accessing the status inside the value object
-          createdDate: obj.value?.createdDate, // Accessing the createdDate inside the value object
-          keyTask: obj.key,
-          actions: 'del', // Set default action if needed
-        }});
+          return {
+            id: index + 1,
+            taskName: obj.value?.title,
+            status: obj.value?.status,
+            createdDate: obj.value?.createdDate,
+            keyTask: obj.key,
+            actions: 'del',
+          }
+        });
 
-        setRowData(rows); // Set rowData for the grid
+        setRowData(rows);
       } catch (error) {
-        console.error('Error fetching tasks:', error);
+        return error;
       }
     };
 

@@ -10,8 +10,8 @@ export class WindowManager {
     this.mainWindow = new BrowserWindow({
       frame: false,
       width: 1024,
-      height: 768,
       minWidth: 1024,
+      height: 768,
       minHeight: 768,
       webPreferences: {
         preload: getPreloadPath(),

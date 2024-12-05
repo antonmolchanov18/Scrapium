@@ -14,8 +14,8 @@ export default class Database {
           isDev() ? '.' : '..',
           databasePath
       ),
-      { valueEncoding: encoding }
-  );
+      { valueEncoding: encoding },
+    );
   }
 
   async open(onError?: (error: any) => void): Promise<void> {
@@ -23,14 +23,17 @@ export default class Database {
       if (!this.isOpen) {
         await this.db.open();
         this.isOpen = true;
-        console.log('Database opened successfully');
       }
     } catch (err) {
-      this.handleError(err, onError, 'open');
+      if (onError) {
+        return onError(err);
+      } else {
+        this.handleError(err, onError, 'open');
+      }
     }
   }
 
-  private async handleError(err: any, onError?: (error: any) => void, methodName?: string): Promise<void> {
+  private handleError(err: any, onError?: (error: any) => void, methodName?: string): Promise<void> {
     if (onError) {
       onError(err);
     } else {
@@ -59,14 +62,15 @@ export default class Database {
   async getLastRecord(): Promise<any | null> {
     try {
       let lastRecord: any = null;
-      
+
       for await (const [key, value] of this.db.iterator({ reverse: true, limit: 1 })) {
         lastRecord = { key, value };
       }
-      
+
       return lastRecord;
     } catch (err) {
       await this.handleError(err, undefined, 'getLastRecord');
+
       return null;
     }
   }
@@ -74,25 +78,33 @@ export default class Database {
   async delete(key: string, onError?: (error: any) => void): Promise<boolean> {
     try {
       await this.db.del(key);
+
       return true;
     } catch (err) {
       await this.handleError(err, onError, 'delete');
+
       return false;
     }
   }
 
   async readAll(start: number = 0, limit?: number, onError?: (error: any) => void): Promise<any[]> {
     const allEntries: any[] = [];
+
     try {
       let count = 0;
+
       for await (const [key, value] of this.db.iterator({ gt: start })) {
         if (limit && count >= start + limit) break;
+
         allEntries.push({ key, value });
+
         count++;
       }
+
       return allEntries;
     } catch (err) {
       await this.handleError(err, onError, 'readAll');
+
       return [];
     }
   }
@@ -100,9 +112,11 @@ export default class Database {
   async has(key: string, onError?: (error: any) => void): Promise<boolean> {
     try {
       await this.db.get(key);
+
       return true;
     } catch (err) {
       await this.handleError(err, onError, 'has');
+
       return false;
     }
   }
@@ -118,13 +132,16 @@ export default class Database {
   async isEmpty(): Promise<boolean> {
     try {
       let isEmpty = true;
+
       for await (const _ of this.db.iterator({ limit: 1 })) {
         isEmpty = false;
         break;
       }
+
       return isEmpty;
     } catch (err) {
       await this.handleError(err, undefined, 'isEmpty');
+
       return true;
     }
   }
@@ -132,11 +149,13 @@ export default class Database {
   create32BitKey(value: number): string {
     const buffer = Buffer.alloc(4);
     buffer.writeInt32LE(value, 0);
+
     return buffer.toString('hex');
   }
 
   decode32BitKey(key: string): number {
     const buffer = Buffer.from(key, 'hex');
+
     return buffer.readInt32LE(0);
   }
 }

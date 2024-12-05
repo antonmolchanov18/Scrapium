@@ -36,12 +36,14 @@ const SignInForm: React.FC<SignInFormProps> = ({ onSubmit }) => {
         {...register("signInName", { required: true })}
       />
       {errors.signInName && <p className='error-text'>Name is required</p>}
+
       <input
         type="password"
         placeholder="Password"
         {...register("signInPassword", { required: true })}
       />
       {errors.signInPassword && <p className='error-text'>Password is required</p>}
+
       <button type="submit">Sign In</button>
       {error && <p className='error-text'>{error}</p>}
     </form>

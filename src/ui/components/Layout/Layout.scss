@@ -1,6 +1,6 @@
 .layout {
-  height: 100vh;
   display: grid;
+  height: 100vh;
   grid-template-rows: auto 1fr;
   grid-template-columns: auto 1fr;
   grid-template-areas:
@@ -10,5 +10,4 @@
 
 .content {
   grid-area: content;
-  
 }

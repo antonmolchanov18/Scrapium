@@ -20,10 +20,9 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSubmit }) => {
   const handleSignUp = async (data: any) => {
     console.log("Запит для реєстрації:", data);
     try {
-      // Викликаємо API для реєстрації
       await register(data.signUpName, data.signUpPassword);
-      reset(); // Скидаємо форму після успішної реєстрації
-      onSubmit(data); // Передаємо дані для подальшого використання
+      reset();
+      onSubmit(data);
     } catch (error) {
       setErrorMessage("Error during registration. Please try again.");
     }
@@ -32,18 +31,21 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSubmit }) => {
   return (
     <form onSubmit={handleSubmit(handleSignUp)}>
       <h1 className='authorization__title'>Create Account</h1>
+
       <input
         type="text"
         placeholder="Name"
         {...formRegister("signUpName", { required: true })}
       />
       {errors.signUpName && <p className="error-text">Name is required</p>}
+
       <input
         type="password"
         placeholder="Password"
         {...formRegister("signUpPassword", { required: true })}
       />
       {errors.signUpPassword && <p className="error-text">Password is required</p>}
+
       <button type="submit">Sign Up</button>
       {errorMessage && <p className="error-text">{errorMessage}</p>} {/* Виведення помилки */}
     </form>

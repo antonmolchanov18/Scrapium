@@ -24,19 +24,19 @@ export const AddTask = () => {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     const apiResponse = await window.API.createTask(data);
-    console.log('Api', apiResponse);
-    
+
     const task = {
       key: apiResponse.key,
       data: apiResponse.data,
     };
-  
+
     const newTab = {
       task, 
       isActive: true,
       input: '',
       isSwitchOn: false,
     };
+
     dispatch(addTab(newTab));
     navigate('/parsing-workspace', {state: { key: apiResponse.key }});
     reset();
@@ -44,6 +44,7 @@ export const AddTask = () => {
 
   const renderError = (fieldName: keyof FormData) => {
     const error = errors?.[fieldName];
+
     return error ? (
       <p className="error-text">
         {typeof error.message === 'string' ? error.message : 'Error!'}

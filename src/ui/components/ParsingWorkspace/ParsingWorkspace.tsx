@@ -1,15 +1,18 @@
 import React, { useEffect, useState, useLayoutEffect  } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateTabState, addTab } from '../../store/tabSlice';
+import { updateTabState } from '../../store/tabSlice';
 import { RootState } from '../../store';
 import Switch from "react-switch";
+
+import { DataPreview } from '../DataPreview/DataPreview';
+
 import './ParsingWorkspace.scss';
 
 import ArrowBackIcon from '../../assets/icons/arrow-back-icon.svg?react';
 import ArrowNextIcon from '../../assets/icons/arrow-next-icon.svg?react';
 import ReloadIcon from '../../assets/icons/reload-icon.svg?react';
-import { DataPreview } from '../DataPreview/DataPreview';
+
 
 export const ParsingWorkspace = () => {
   const [preloadPath, setPreloadPath] = useState<string | null>(null);
@@ -29,26 +32,22 @@ export const ParsingWorkspace = () => {
     setTaskKey();
   }, [taskKey]);
 
-  // Retrieve the current tab
   const tab = useSelector((state: RootState) =>
     state.tabs.tabs.find((tab) => tab.task.key === taskKey)
   );
-  console.log('TAB', tab);
 
-  // UseEffect to fetch preloadPath
   useEffect(() => {
     const fetchPreloadPath = async () => {
       try {
         setPreloadPath(await window.API.getPreloadPath());
       } catch (error) {
-        console.error("Error fetching preload path:", error);
+        return error;
       }
     };
 
     fetchPreloadPath();
   }, []);
 
-  // UseLayoutEffect to configure webview
   useLayoutEffect(() => {
     const webview = document.getElementById("my-webview") as HTMLWebViewElement;
     if (webview) {
@@ -102,27 +101,21 @@ export const ParsingWorkspace = () => {
 
       webview.addEventListener("new-window", (event) => {
         //@ts-ignore
-        console.log("Preventing navigation to:", event.url); // Логування URL
-        event.preventDefault(); // Не дозволяти переходи за посиланнями
+        event.preventDefault();
       });
 
-      // Запобігти всім навігаціям
       webview.addEventListener("will-navigate", (event) => {
         //@ts-ignore
-        console.log("Preventing navigation to:", event.url); // Логування URL
-        // Повертаємось до початкового URL
-        //@ts-ignore
-        webview.loadURL(webview.src); // Завантажити початковий URL
+        webview.loadURL(webview.src);
       });
       
       webview.addEventListener("dom-ready", onDomReady);
       return () => webview.removeEventListener("dom-ready", onDomReady);
     } else {
-      console.log("WebView element not found.");
+      return;
     }
   }, [preloadPath]);
 
-  // Handlers for input and switch changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(updateTabState({ key: taskKey, inputValue: event.target.value, switchValue: tab?.switchValue || false }));
   };
@@ -134,15 +127,13 @@ export const ParsingWorkspace = () => {
   const startParser = async (key: string) => {
     try {
       const result = await window.API.startParser(key);
-      console.log("Parser started successfully:", result);
-      // Assuming the result is in the format [{field_1: Array(1)}, {field_2: Array(179)}, {field_3: Array(179)}]
-      setParsingData(result); // Update the state with the parsing result
+
+      setParsingData(result);
     } catch (error) {
-      console.error("Error starting parser:", error);
+      return error;
     }
   };
 
-  // Render JSX
   return (
     <div className="parser-workplace">
       {!tab ? (

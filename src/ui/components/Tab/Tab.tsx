@@ -1,7 +1,7 @@
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import cn from 'classnames';
 import { openTab, closeTab } from '../../store/tabSlice';
-import { useNavigate } from 'react-router-dom';
 
 import TabCloseIcon from '../../assets/icons/tab-close-icon.svg?react';
 

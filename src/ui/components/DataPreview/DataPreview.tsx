@@ -4,6 +4,8 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { ColDef } from 'ag-grid-community';
 
+import SaveIcon from '../../assets/icons/save-icon.svg?react';
+
 interface RowData {
   [key: string]: any;
 }
@@ -16,7 +18,7 @@ export const DataPreview = ({ data }: { data: Array<{ [key: string]: any }> }) =
     sortable: true,
     filter: true,
   }), []);
-
+  
   const [rowData, setRowData] = useState<RowData[]>([]);
   const [colDefs, setColDefs] = useState<ColDef<RowData>[]>([]);
 
@@ -103,6 +105,20 @@ export const DataPreview = ({ data }: { data: Array<{ [key: string]: any }> }) =
     }
   }, [data]);
 
+  const exportToJSON = () => {
+    if (rowData && rowData.length > 0) {
+      const json = JSON.stringify(rowData, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'data.json';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   const exportToCSV = () => {
     if (gridApi.current) {
       gridApi.current.api.exportDataAsCsv();
@@ -111,9 +127,15 @@ export const DataPreview = ({ data }: { data: Array<{ [key: string]: any }> }) =
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <button onClick={exportToCSV} style={{ marginBottom: '10px', alignSelf: 'flex-end' }}>
-        Зберегти у CSV
-      </button>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '20px'}}>
+      <div style={{ display: 'flex', gap: '10px'}}>
+        <p>Зберегти у CSV:</p>
+        <SaveIcon className='icon' style={{alignItems: 'flex-end'}} onClick={exportToCSV}/>
+      </div>
+      <div style={{ display: 'flex', gap: '10px'}}>
+        <p>Зберегти у JSON:</p>
+        <SaveIcon className='icon' style={{alignItems: 'flex-end'}} onClick={exportToJSON}/></div>
+      </div>
 
       <div className="ag-theme-quartz table" style={{ height: '100%' }}>
         <AgGridReact

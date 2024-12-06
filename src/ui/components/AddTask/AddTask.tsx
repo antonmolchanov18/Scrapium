@@ -24,6 +24,8 @@ export const AddTask = () => {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     const apiResponse = await window.API.createTask(data);
+    console.log(apiResponse);
+    
 
     const task = {
       key: apiResponse.key,

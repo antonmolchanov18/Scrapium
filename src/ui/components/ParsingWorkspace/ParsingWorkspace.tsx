@@ -22,6 +22,23 @@ export const ParsingWorkspace = () => {
   const dispatch = useDispatch();
 
   const taskKey = state?.key;
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      if (taskKey) {
+        try {
+          const parserData = await window.API.getParserData(taskKey);
+
+          setParsingData(parserData);
+        } catch (error) {
+          console.error("Error fetching parser data:", error);
+        }
+      }
+    };
+
+    fetchInitialData();
+  }, [taskKey]);
+
   
   useEffect(() => {
     const setTaskKey = async () => {
@@ -104,7 +121,7 @@ export const ParsingWorkspace = () => {
         event.preventDefault();
       });
 
-      webview.addEventListener("will-navigate", (event) => {
+      webview.addEventListener("will-navigate", () => {
         //@ts-ignore
         webview.loadURL(webview.src);
       });
@@ -173,7 +190,7 @@ export const ParsingWorkspace = () => {
               </form>
             </div>
 
-            <button className="parser-workplace__button button" onClick={() => startParser(taskKey)}>run</button>
+            <button className="parser-workplace__button button" onClick={() => startParser(taskKey)}>RUN</button>
           </div>
 
           {preloadPath ? (

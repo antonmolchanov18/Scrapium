@@ -211,7 +211,7 @@ export class MainApp {
 
         await this.TasksDb.put(key, { ...task, status: 'Running', message: 'Task is in progress.' });
 
-        const browser = await puppeteer.launch({ headless: false, slowMo: 200 });
+        const browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
 
         await page.goto(task.url, { waitUntil: 'domcontentloaded' });

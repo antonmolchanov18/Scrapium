@@ -25,9 +25,6 @@ const initialState: TabsState = {
   tabs: [],
 };
 
-console.log(initialState);
-
-
 const tabsSlice = createSlice({
   name: 'tabs',
   initialState,
@@ -36,23 +33,19 @@ const tabsSlice = createSlice({
       const { task } = action.payload;
 
       if (!task.key || !task.data) {
-        console.error('Invalid task provided:', task);
+        return;
+      }
+      
+      const existingTab = state.tabs.find(tab => tab.task.key === task.key);
+      if (existingTab) {
+        state.tabs.forEach(tab => tab.isActive = false);
+        existingTab.isActive = true;
+
         return;
       }
 
-      console.log('Task redux', action.payload);
-      
-      // Перевірка на наявність таба в state
-      const existingTab = state.tabs.find(tab => tab.task.key === task.key);
-      if (existingTab) {
-        // Якщо таб вже є, оновлюємо його стан
-        state.tabs.forEach(tab => tab.isActive = false); // деактивуємо всі таби
-        existingTab.isActive = true; // активуємо існуючий таб
-        return; // не додаємо новий таб
-      }
+      state.tabs.forEach(tab => tab.isActive = false);
 
-      // Якщо таба немає, додаємо новий
-      state.tabs.forEach(tab => tab.isActive = false); // деактивуємо всі таби
       state.tabs.push({
         task,
         isActive: true,
@@ -77,10 +70,7 @@ const tabsSlice = createSlice({
       const tabIndex = state.tabs.findIndex(tab => tab.task.key === action.payload);
       
       if (tabIndex !== -1) {
-
         state.tabs.splice(tabIndex, 1);
-
-        
       }
     },
 
@@ -89,11 +79,7 @@ const tabsSlice = createSlice({
       action: PayloadAction<{ key: string; inputValue: string; switchValue: boolean }>
     ) => {
       const { key, inputValue, switchValue } = action.payload;
-      console.log(key);
-      
       const tab = state.tabs.find(tab => tab.task.key === key);
-      console.log('This tab', JSON.parse(JSON.stringify(state.tabs)));
-      
 
       if (tab) {
         tab.inputValue = inputValue;

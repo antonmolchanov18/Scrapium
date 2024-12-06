@@ -56,7 +56,7 @@ export const TaskList = () => {
   };
 
   const [rowData, setRowData] = useState<RowData[]>([]);
-  const [colDefs, setColDefs] = useState<ColDef<RowData>[]>([
+  const [colDefs] = useState<ColDef<RowData>[]>([
     { field: 'id', headerName: 'ID', maxWidth: 100,},
     { field: 'taskName', headerName: 'Task Name', },
     {

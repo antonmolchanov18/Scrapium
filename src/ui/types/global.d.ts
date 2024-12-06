@@ -9,6 +9,7 @@ declare global {
       getTask: (key: string) => any;
       getAllTask: () => Promise<any>;
       getPreloadPath: () => string | null;
+      getParserData: (key: string) => Promise<any>;
       getWebContents(): Electron.WebContents;
       startParser: (key: string) => Promise<any>;
       setCurrentTaskKey: (key: string) => Promise<any>;

@@ -4,7 +4,6 @@ import { Tab } from '../Tab/Tab';
 
 export const Tabs = () => {
   const tabs = useAppSelector(state => state.tabs.tabs);
-  console.log(tabs);
   
   return (
     <div className="tab">

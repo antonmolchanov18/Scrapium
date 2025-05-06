@@ -5,7 +5,7 @@ import { getPreloadPath } from './pathResolver.js';
 import * as fs from 'fs';
 import { EventManager } from './EventManager/EventManager.js';
 import { WindowManager } from './WindowManager/WindowManager.js';
-import Database from './Database/Database.js';
+import Database from './database/Database.js';
 import puppeteer from 'puppeteer';
 
 export class MainApp {

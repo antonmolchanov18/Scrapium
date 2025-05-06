@@ -4,6 +4,7 @@ import AddIcon from '../../assets/icons/add-icon.svg?react';
 import ListIcon from '../../assets/icons/list-icon.svg?react';
 import SignIcon from '../../assets/icons/sign-icon.svg?react';
 import SettingsIcon from '../../assets/icons/settings-icon.svg?react';
+import AnalyzeIcon from '../../assets/icons/dildo.svg?react'
 
 
 const sidebarData = {
@@ -23,6 +24,16 @@ const sidebarData = {
       ]
     },
     {
+          items: [
+            {
+              to: '/add-task',
+              icon: AnalyzeIcon,
+              text: "My analyze",
+            },
+
+          ]
+        },
+    {
       items: [
         {
           to: '/authorization',
@@ -36,6 +47,7 @@ const sidebarData = {
         }
       ]
     }
+
   ]
 };
 

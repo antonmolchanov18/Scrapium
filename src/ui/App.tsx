@@ -9,6 +9,7 @@ import { TaskList } from './components/TaskList/TaskList';
 import { Settings } from './components/Settings/Settigs';
 import { Authorization } from './components/Authorization/Authorization';
 import { ParsingWorkspace } from './components/ParsingWorkspace/ParsingWorkspace';
+import DataAnalysisPage from './components/DataAnalysisWorkspace/DataAnalysesPage';
 
 function App() {
   const location = useLocation();
@@ -22,6 +23,7 @@ function App() {
           <Route path='task-list' element={<TaskList />} />
           <Route path='settings' element={<Settings />} />
           <Route path='parsing-workspace' element={<ParsingWorkspace />} />
+          <Route path="analyse-workspace" element={<DataAnalysisPage />} />
         </Route>
       </Routes>
       {isAuthorizationOpen && <Authorization />}

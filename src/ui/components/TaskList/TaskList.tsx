@@ -54,6 +54,25 @@ export const TaskList = () => {
     dispatch(addTab(newTab));
     navigate('/parsing-workspace', { state: { key: keyTask } }); // Передача ключа через state
   };
+  const handleOpenAnalyse = async (keyTask: string) => {
+
+    const fetchedTab = await window.API.getTask(keyTask);
+
+    const task = {
+      key: keyTask,
+      data: fetchedTab,
+    };
+
+    const newTab = {
+      task,
+      isActive: true,
+      input: '',
+      isSwitchOn: false,
+    };
+
+    dispatch(addTab(newTab));
+    navigate('/analyse-workspace', { state: { key: keyTask } }); // Передача ключа через state
+  };
 
   const [rowData, setRowData] = useState<RowData[]>([]);
   const [colDefs] = useState<ColDef<RowData>[]>([
@@ -80,6 +99,7 @@ export const TaskList = () => {
       cellRenderer: (params: any) => (
         <>
           <IconOpen className='icon icon-small' onClick={() => handleOpenTask(params.data.keyTask)} />
+          <IconOpen className='icon icon-small' onClick={() => handleOpenAnalyse(params.data.keyTask)} />
           <IconDelete className='icon icon-small' onClick={() => handleDelete(params.data.id, params.data.keyTask)} />
         </>
       ),

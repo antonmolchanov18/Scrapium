@@ -2,13 +2,10 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { DataPreview } from '../DataPreview/DataPreview';
 import axiosInstance from '../../api/axiosInstance';
-
-const FIELD_NAME_MAP: Record<string, string> = {
-  field_1: 'Назва',
-  field_2: 'Ціна',
-  field_3: 'Місто',
-  field_4: 'Рейтинг',
-};
+import {
+  PieChart, Pie, Cell, Tooltip as ReTooltip,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend
+} from 'recharts';
 
 const DataAnalysisPage = () => {
   const location = useLocation();
@@ -17,10 +14,8 @@ const DataAnalysisPage = () => {
   const [rawData, setRawData] = useState<any[]>([]);
   const [displayData, setDisplayData] = useState<any[]>([]);
   const [columnNames, setColumnNames] = useState<string[]>([]);
-  const [renamed, setRenamed] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
-  // --- 1. Завантаження початкових даних ---
   useEffect(() => {
     const fetchData = async () => {
       if (!keyTask) return;
@@ -29,32 +24,15 @@ const DataAnalysisPage = () => {
       setRawData(parserData);
       setDisplayData(parserData);
       setColumnNames(Object.keys(parserData[0] || {}));
-      setRenamed(false);
       setIsReady(true);
     };
     fetchData();
   }, [keyTask]);
 
-  // --- 2. Ручне перейменування колонок ---
-  const renameColumns = () => {
-    const renamedData = rawData.map((obj) => {
-      const newObj: Record<string, any> = {};
-      for (const key in obj) {
-        const newKey = FIELD_NAME_MAP[key] || key;
-        newObj[newKey] = obj[key];
-      }
-      return newObj;
-    });
-    setDisplayData(renamedData);
-    setColumnNames(Object.values(FIELD_NAME_MAP));
-    setRenamed(true);
-  };
-
-  // --- 3. Автоматична класифікація ---
   const classifyColumns = async () => {
     try {
-      setDisplayData([]);  // очистити таблицю
-      setIsReady(false);   // вимкнути рендер
+      setDisplayData([]);
+      setIsReady(false);
       const response = await axiosInstance.post('/classify-columns', {
         data: rawData,
       });
@@ -63,7 +41,6 @@ const DataAnalysisPage = () => {
 
       setColumnNames(columns);
       setDisplayData(data);
-      setRenamed(true);
       setIsReady(true);
     } catch (error) {
       console.error('Помилка при класифікації колонок:', error);
@@ -71,12 +48,20 @@ const DataAnalysisPage = () => {
     }
   };
 
-  // --- 4. Вибір ключа для перерендеру ---
-  const previewKey = renamed ? 'renamed' : 'original';
+  // ✅ Побудова даних для графіка з displayData[0]
+  const graphData = useMemo(() => {
+    if (!displayData || displayData.length === 0) return [];
 
-  // --- 5. Оптимізація ---
-  const previewData = useMemo(() => displayData, [displayData]);
-  const previewColumns = useMemo(() => columnNames, [columnNames]);
+    const record = displayData[0]; // Єдиний обʼєкт
+    if (!record['Назва'] || !record['Кількість']) return [];
+
+    return record['Назва'].map((назва: string, i: number) => ({
+      Назва: назва,
+      Кількість: parseInt(String(record['Кількість'][i]).replace(/\s/g, '')) || 0
+    }))
+    .filter(item => item.Назва && !isNaN(item.Кількість))
+    .slice(0, 10);
+  }, [displayData]);
 
   return (
     <div className="analysis-workspace" style={{ padding: 20 }}>
@@ -89,21 +74,51 @@ const DataAnalysisPage = () => {
       </div>
 
       <div style={{ marginBottom: 20 }}>
-        <button onClick={renameColumns} disabled={renamed} style={{ marginRight: 10 }}>
-          📝 Назвати колонки вручну
-        </button>
         <button onClick={classifyColumns}>
           🧠 Автокласифікація колонок
         </button>
       </div>
 
+      {isReady && graphData.length > 0 && (
+        <>
+          <h3>Візуалізація за колонкою "Кількість"</h3>
+          <div style={{ display: 'flex', gap: '50px', flexWrap: 'wrap' }}>
+            <BarChart width={500} height={300} data={graphData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="Назва" />
+              <YAxis />
+              <ReTooltip />
+              <Legend />
+              <Bar dataKey="Кількість" fill="#8884d8" />
+            </BarChart>
+
+            <PieChart width={400} height={300}>
+              <Pie
+                data={graphData}
+                dataKey="Кількість"
+                nameKey="Назва"
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                label
+              >
+                {graphData.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={`hsl(${index * 36}, 70%, 50%)`} />
+                ))}
+              </Pie>
+              <ReTooltip />
+            </PieChart>
+          </div>
+        </>
+      )}
+
       <h3 style={{ marginTop: 40 }}>Попередній перегляд таблиці</h3>
       <div style={{ height: '500px' }}>
         {isReady && displayData.length > 0 ? (
           <DataPreview
-            key={previewKey}
-            data={previewData}
-            columns={previewColumns}
+            key={keyTask}
+            data={displayData}
+            columns={columnNames}
           />
         ) : (
           <p>Завантаження даних або немає що показати...</p>

@@ -18,7 +18,7 @@ export const DataPreview = ({ data }: { data: Array<{ [key: string]: any }> }) =
     sortable: true,
     filter: true,
   }), []);
-  
+
   const [rowData, setRowData] = useState<RowData[]>([]);
   const [colDefs, setColDefs] = useState<ColDef<RowData>[]>([]);
 

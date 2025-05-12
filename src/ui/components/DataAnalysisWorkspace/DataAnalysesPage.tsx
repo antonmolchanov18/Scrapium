@@ -38,7 +38,6 @@ const DataAnalysisPage = () => {
       });
 
       const { columns, data } = response.data;
-
       setColumnNames(columns);
       setDisplayData(data);
       setIsReady(true);
@@ -48,18 +47,31 @@ const DataAnalysisPage = () => {
     }
   };
 
-  // ✅ Побудова даних для графіка з displayData[0]
   const graphData = useMemo(() => {
     if (!displayData || displayData.length === 0) return [];
 
-    const record = displayData[0]; // Єдиний обʼєкт
-    if (!record['Назва'] || !record['Кількість']) return [];
+    const record = displayData[0];
+    const columnKeys = Object.keys(record);
 
-    return record['Назва'].map((назва: string, i: number) => ({
-      Назва: назва,
-      Кількість: parseInt(String(record['Кількість'][i]).replace(/\s/g, '')) || 0
+    const numberCol = columnKeys.find(key =>
+      record[key].some((val: any) =>
+        !isNaN(parseFloat(String(val).replace(/\s/g, '').replace(',', '.')))
+      )
+    );
+
+    const labelCol = columnKeys.find(key =>
+      record[key].some((val: any) =>
+        typeof val === 'string' && isNaN(parseFloat(val))
+      )
+    );
+
+    if (!numberCol || !labelCol) return [];
+
+    return record[labelCol].map((label: string, i: number) => ({
+      [labelCol]: label,
+      [numberCol]: parseFloat(String(record[numberCol][i]).replace(/\s/g, '').replace(',', '.')) || 0
     }))
-    .filter(item => item.Назва && !isNaN(item.Кількість))
+    .filter(item => item[labelCol] && !isNaN(item[numberCol]))
     .slice(0, 10);
   }, [displayData]);
 
@@ -75,28 +87,28 @@ const DataAnalysisPage = () => {
 
       <div style={{ marginBottom: 20 }}>
         <button onClick={classifyColumns}>
-          🧠 Автокласифікація колонок
+          🧐 Автокласифікація колонок
         </button>
       </div>
 
       {isReady && graphData.length > 0 && (
         <>
-          <h3>Візуалізація за колонкою "Кількість"</h3>
+          <h3>Візуалізація</h3>
           <div style={{ display: 'flex', gap: '50px', flexWrap: 'wrap' }}>
             <BarChart width={500} height={300} data={graphData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="Назва" />
+              <XAxis dataKey={Object.keys(graphData[0])[0]} />
               <YAxis />
               <ReTooltip />
               <Legend />
-              <Bar dataKey="Кількість" fill="#8884d8" />
+              <Bar dataKey={Object.keys(graphData[0])[1]} fill="#8884d8" />
             </BarChart>
 
             <PieChart width={400} height={300}>
               <Pie
                 data={graphData}
-                dataKey="Кількість"
-                nameKey="Назва"
+                dataKey={Object.keys(graphData[0])[1]}
+                nameKey={Object.keys(graphData[0])[0]}
                 cx="50%"
                 cy="50%"
                 outerRadius={100}

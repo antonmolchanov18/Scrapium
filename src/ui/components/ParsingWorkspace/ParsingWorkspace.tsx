@@ -9,8 +9,6 @@ import { DataPreview } from '../DataPreview/DataPreview';
 
 import './ParsingWorkspace.scss';
 
-import ArrowBackIcon from '../../assets/icons/arrow-back-icon.svg?react';
-import ArrowNextIcon from '../../assets/icons/arrow-next-icon.svg?react';
 import ReloadIcon from '../../assets/icons/reload-icon.svg?react';
 
 
@@ -162,8 +160,6 @@ export const ParsingWorkspace = () => {
 
             <div className="parser-workplace__navigation">
               <div className="parser-workplace__navigation-buttons">
-                <ArrowBackIcon className="icon icon--medium" />
-                <ArrowNextIcon className="icon icon--medium" />
                 <ReloadIcon className="icon icon--medium" />
               </div>
 

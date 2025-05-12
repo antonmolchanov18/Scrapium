@@ -3,7 +3,7 @@
 .parser-workplace {
   display: grid;
   height: 100%;
-  grid-template-columns: 1fr 10%;
+  grid-template-columns: 1fr;
   grid-template-rows: min-content 1fr 35%;
   grid-template-areas:
     "header header"
@@ -14,6 +14,7 @@
       display: flex;
       align-items: center;
       padding: 15px 25px;
+      border-bottom: vars.$border-color solid 1px;
 
       grid-area: header;
     }
@@ -35,10 +36,11 @@
     &__navigation {
       display: flex;
       align-items: center;
+      justify-content: center;
       min-width: 60vw;
       margin: 0 auto;
       padding-inline: 50px;
-      gap: calc((50px / vars.$main-font-size) * 1rem);
+      gap: calc((20px / vars.$main-font-size) * 1rem);
 
       &-buttons {
         display: flex;
@@ -48,7 +50,7 @@
 
     &__form {
       display: flex;
-      width: 100%;
+      width: 35vw;
       padding: 5px 10px;
       align-items: center;
       background-color: inherit;
@@ -62,6 +64,3 @@
       height: calc((25px / vars.$main-font-size) * 1rem);
     }
 }
-
-
-

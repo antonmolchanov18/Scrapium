@@ -4,6 +4,8 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { ColDef } from 'ag-grid-community';
 
+import './DataPreview.scss';
+
 import SaveIcon from '../../assets/icons/save-icon.svg?react';
 
 interface RowData {
@@ -126,15 +128,15 @@ export const DataPreview = ({ data }: { data: Array<{ [key: string]: any }> }) =
   };
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '20px'}}>
-      <div style={{ display: 'flex', gap: '10px'}}>
-        <p>Зберегти у CSV:</p>
-        <SaveIcon className='icon' style={{alignItems: 'flex-end'}} onClick={exportToCSV}/>
+    <div className='data-preview'>
+      <div className='data-preview__options'>
+      <div className='data-preview__button button-outline' onClick={exportToCSV}>
+        <p>CSV:</p>
+        <SaveIcon className='icon' style={{alignItems: 'flex-end'}} />
       </div>
-      <div style={{ display: 'flex', gap: '10px'}}>
-        <p>Зберегти у JSON:</p>
-        <SaveIcon className='icon' style={{alignItems: 'flex-end'}} onClick={exportToJSON}/></div>
+      <div className='data-preview__button button-outline' onClick={exportToJSON}>
+        <p>JSON:</p>
+        <SaveIcon className='icon' style={{alignItems: 'flex-end'}}/></div>
       </div>
 
       <div className="ag-theme-quartz table" style={{ height: '100%' }}>

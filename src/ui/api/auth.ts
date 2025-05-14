@@ -27,7 +27,10 @@ export const login = async (username: string, password: string) => {
       password,
     });
 
-    const token = response.data.token;
+    const token = response.data.access_token;
+    if (token) {
+      localStorage.setItem("token", token);
+    }
 
     return token;
   } catch (error: any) {
@@ -36,7 +39,9 @@ export const login = async (username: string, password: string) => {
     } else if (error.request) {
       return error.request;
     } else {
-      error.message;
+      return error.message;
     }
   }
 };
+
+

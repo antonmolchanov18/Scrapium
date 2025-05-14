@@ -24,16 +24,6 @@ const sidebarData = {
       ]
     },
     {
-          items: [
-            {
-              to: '/add-task',
-              icon: AnalyzeIcon,
-              text: "My analyze",
-            },
-
-          ]
-        },
-    {
       items: [
         {
           to: '/authorization',

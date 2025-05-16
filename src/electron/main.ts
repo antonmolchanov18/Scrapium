@@ -184,7 +184,7 @@ export class MainApp {
 
         const task = await this.TasksDb.get(this.currentTaskKey);
         await this.TasksDb.put(this.currentTaskKey, { ...task, status: 'Ready', message: 'Selectors are ready for parsing.' });
-
+        console.log(storedSelectors)
         return storedSelectors;
       } catch (error) {
         console.error(error);

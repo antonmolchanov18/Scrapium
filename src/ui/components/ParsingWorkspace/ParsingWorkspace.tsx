@@ -65,54 +65,92 @@ export const ParsingWorkspace = () => {
 
   useLayoutEffect(() => {
     const webview = document.getElementById("my-webview") as HTMLWebViewElement;
-    if (webview) {
-      const onDomReady = () => {
-        //@ts-ignore
-        webview.send("taskKey", taskKey);
-        console.log("WebView is ready");
-        // @ts-ignore
-        webview.executeJavaScript(`
-          const matchedElements = []; // Масив для збереження селекторів
-          let taskKey = null;
-        
-          // Отримання taskKey
-          window.addEventListener('message', (event) => {
-            if (event.data.taskKey) {
-              taskKey = event.data.taskKey;
-              console.log('Task Key:', taskKey);
-            }
-          });
-        
-          // Функція для генерації селектора
-          function generateSelector(el) {
-            let selector = el.tagName.toLowerCase();
-            if (el.id) selector += '#' + el.id;
-            if (el.classList.length > 0) selector += '.' + Array.from(el.classList).join('.');
-            return selector;
+
+if (webview) {
+  const onDomReady = () => {
+    // @ts-ignore
+    webview.send("taskKey", taskKey);
+    console.log("WebView is ready");
+
+    // @ts-ignore
+    webview.executeJavaScript(`
+      const matchedElements = new Set(); // Унікальний набір селекторів
+      let taskKey = null;
+
+      // Отримання taskKey
+      window.addEventListener('message', (event) => {
+        if (event.data.taskKey) {
+          taskKey = event.data.taskKey;
+          console.log('Task Key:', taskKey);
+        }
+      });
+
+      // Функція для побудови "групового" селектора (без id і nth-of-type)
+      function generateGroupedSelector(element) {
+        if (!(element instanceof Element)) return null;
+
+        const path = [];
+
+        while (element && element.nodeType === Node.ELEMENT_NODE && element !== document.body) {
+          let part = element.tagName.toLowerCase();
+
+          const classList = Array.from(element.classList)
+            .filter(cls => !cls.match(/^(active|selected|hover|focus|open|closed|show|hide)$/));
+
+          if (classList.length > 0) {
+            part += '.' + classList.join('.');
           }
-        
-          // Обробка кліку
-          document.addEventListener('click', (event) => {
-            event.preventDefault();
-            const element = event.target;
-            const selector = generateSelector(element);
-        
-            if (!matchedElements.includes(selector)) {
-              matchedElements.push(selector);
-              element.style.border = '2px solid green'; // Підсвічуємо елемент
-              window.API.postSelectors(selector); // Надсилаємо селектор
-            } else {
-              matchedElements.splice(matchedElements.indexOf(selector), 1);
-              element.style.border = ''; // Забираємо підсвічення
-              window.API.postSelectors(selector); // Можливо, видаляємо селектор на сервері
-            }
-        
-            console.log('Selected Elements:', matchedElements);
-          });
-        `)
-          .then(() => console.log("JavaScript executed"))
-          .catch(() => console.error("Error executing JavaScript"));
-      };
+
+          path.unshift(part);
+          element = element.parentElement;
+        }
+
+        return path.join(' > ');
+      }
+
+      const highlightStyle = '2px solid green';
+      const ignoredTags = ['html', 'head', 'script', 'meta', 'style'];
+
+      document.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const element = event.target;
+        const tagName = element.tagName.toLowerCase();
+        if (ignoredTags.includes(tagName)) return;
+
+        const selector = generateGroupedSelector(element);
+        if (!selector) return;
+
+        if (!matchedElements.has(selector)) {
+          matchedElements.add(selector);
+
+          // Виділяємо всі подібні елементи
+          const similarElements = document.querySelectorAll(selector);
+          similarElements.forEach(el => el.style.outline = highlightStyle);
+
+          if (window.API && typeof window.API.postSelectors === 'function') {
+            window.API.postSelectors(selector);
+          }
+
+        } else {
+          matchedElements.delete(selector);
+
+          // Знімаємо виділення з усіх подібних елементів
+          const similarElements = document.querySelectorAll(selector);
+          similarElements.forEach(el => el.style.outline = '');
+
+          if (window.API && typeof window.API.postSelectors === 'function') {
+            window.API.postSelectors(selector); // можна передавати як "деактивований"
+          }
+        }
+
+        console.log('Вибрані групові селектори:', Array.from(matchedElements));
+      }, true);
+    `)
+    .then(() => console.log("JavaScript executed"))
+    .catch((err: any) => console.error("Error executing JavaScript:", err));
+  };
 
       webview.addEventListener("new-window", (event) => {
         //@ts-ignore

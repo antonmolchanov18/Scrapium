@@ -1,0 +1,35 @@
+@use '../../styles/utils/variables' as vars;
+
+.analysis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+
+  &__header {
+    padding: 30px 15px;
+  }
+
+  &__preview {
+    padding: 30px 15px;
+  }
+
+  &__bar {
+    width: 100%;
+    height: 500px;
+  }
+}
+
+.layout {
+  display: grid;
+  height: 100vh;
+  grid-template-rows: auto 1fr;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "sidebar topbar"
+    "analys-table";
+}
+
+.analyses {
+  grid-area: analys-table;
+}

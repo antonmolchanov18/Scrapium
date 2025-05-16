@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5001',
+  baseURL: 'https://7e3f-159-224-217-28.ngrok-free.app/',
 });
 
 axiosInstance.interceptors.request.use((config) => {

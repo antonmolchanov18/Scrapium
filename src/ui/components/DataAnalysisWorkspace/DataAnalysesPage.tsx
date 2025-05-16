@@ -4,8 +4,11 @@ import { DataPreview } from '../DataPreview/DataPreview';
 import axiosInstance from '../../api/axiosInstance';
 import {
   PieChart, Pie, Cell, Tooltip as ReTooltip,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
+  ResponsiveContainer
 } from 'recharts';
+
+import './DataAnalysesWorkspace.scss';
 
 function normalizeToDataPreviewFormat(data: any[]): Record<string, any[]> {
   const result: Record<string, any[]> = {};
@@ -137,39 +140,7 @@ const DataAnalysisPage = () => {
     return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
   }, [displayData, xColumn, yColumn]);
 
-  const graphData = useMemo(() => {
-    if (!displayData || displayData.length === 0) return [];
-
-    const record = displayData[0];
-    const columnKeys = Object.keys(record);
-
-   const numberCol = columnKeys.find(key =>
-     Array.isArray(record[key]) &&
-     record[key].some((val: any) =>
-       !isNaN(parseFloat(String(val).replace(/\s/g, '').replace(',', '.')))
-     )
-   );
-
-   const labelCol = columnKeys.find(key =>
-     Array.isArray(record[key]) &&
-     record[key].some((val: any) =>
-       typeof val === 'string' && isNaN(parseFloat(val))
-     )
-   );
-
-
-    if (!numberCol || !labelCol) return [];
-
-    return record[labelCol].map((label: string, i: number) => ({
-      [labelCol]: label,
-      [numberCol]: parseFloat(String(record[numberCol][i]).replace(/\s/g, '').replace(',', '.')) || 0
-    }))
-    .filter(item => item[labelCol] && !isNaN(item[numberCol]))
-    .slice(0, 10);
-  }, [displayData]);
-  if (!authChecked) {
-    return <p style={{ padding: 20 }}>🔐 Перевірка авторизації...</p>;
-  }
+  
 
   if (!authorized) {
     return <p style={{ padding: 20 }}>⛔ Доступ заборонено.</p>;
@@ -177,19 +148,19 @@ const DataAnalysisPage = () => {
 
   return (
 
-    <div className="analysis-workspace" style={{ padding: 20 }}>
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        marginBottom: 20, borderBottom: '1px solid #ccc', paddingBottom: 10
-      }}>
-        <h1>Аналіз даних</h1>
-        <p style={{ fontStyle: 'italic' }}>Задача: <strong>{keyTask}</strong></p>
+    <div className="analysis">
+      <header className='analysis__header'>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, borderBottom: '1px solid #ccc', paddingBottom: 10 }}>
+        
+        <h1 className='title--h1 '>Аналіз даних</h1>
+
+        <p className='title--h2' style={{ fontStyle: 'italic' }}>Задача: <strong>{keyTask}</strong></p>
       </div>
 
       <div style={{ marginBottom: 20, display: 'flex', gap: 10 }}>
-        <button onClick={classifyColumns}>🧐 Автокласифікація колонок</button>
-        <button onClick={() => setShowCharts(true)}>📊 Побудувати графіки</button>
-        <label htmlFor="upload-json" style={{ cursor: 'pointer', background: '#eee', padding: '5px 10px', borderRadius: '5px' }}>
+        <button className='button' onClick={classifyColumns}>🧐 Автокласифікація колонок</button>
+        <button className='button' onClick={() => setShowCharts(true)}>📊 Побудувати графіки</button>
+        <label className='button' htmlFor="upload-json">
           📁 Завантажити JSON
         </label>
         <input
@@ -200,41 +171,48 @@ const DataAnalysisPage = () => {
           style={{ display: 'none' }}
         />
       </div>
+      </header>
 
-    <select onChange={(e) => setChartType(e.target.value)}>
-      <option value="bar">Bar Chart</option>
-      <option value="pie">Pie Chart</option>
-    </select>
+      <div className='analysis__preview'>
+        {isReady && showCharts && chartData.length > 0 && (
+        <div className='analys'>
+          <div>
+            <select onChange={(e) => setChartType(e.target.value)}>
+              <option value="bar">Bar Chart</option>
+              <option value="pie">Pie Chart</option>
+            </select>
 
-    <select onChange={(e) => setXColumn(e.target.value)}>
-      {columnNames.map(name => <option key={name}>{name}</option>)}
-    </select>
+            <select onChange={(e) => setXColumn(e.target.value)}>
+              {columnNames.map(name => <option key={name}>{name}</option>)}
+            </select>
 
-    <select onChange={(e) => setYColumn(e.target.value)}>
-      <option value="count">Count (кількість)</option>
-      {columnNames.map(name => <option key={name}>{name}</option>)}
-    </select>
+            <select onChange={(e) => setYColumn(e.target.value)}>
+              <option value="count">Count (кількість)</option>
+                {columnNames.map(name => <option key={name}>{name}</option>)}
+              </select>
+          </div>
 
-      {isReady && showCharts && chartData.length > 0 && (
-        <div>
-          <h3>Візуалізація</h3>
           <div style={{
             maxHeight: '400px',
+            width: '100%',
             overflowY: 'auto',
-            border: '1px solid #ccc',
             padding: '10px',
             marginBottom: '20px'
           }}>
-            <div style={{ display: 'flex', gap: '50px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '50px', flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
               {chartType === "bar" && (
-                <BarChart width={1000} height={400} data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <ReTooltip />
-                  <Legend />
-                  <Bar dataKey="value" fill="#8884d8" />
-                </BarChart>
+                <div style={{ width: '80%', height: 400 }}>
+                  <ResponsiveContainer width="80%" height="100%">
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <ReTooltip />
+                      <Legend />
+                      <Bar dataKey="value" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+              </div>
               )}
 
               {chartType === "pie" && (
@@ -259,9 +237,9 @@ const DataAnalysisPage = () => {
           </div>
         </div>
       )}
+      </div>
 
-      <h3 style={{ marginTop: 0 }}>Попередній перегляд таблиці</h3>
-      <div style={{ height: '1000px' }}>
+      <div className='analysis__table' style={{ height: '50%' }}>
         {isReady && displayData.length > 0 ? (
           <DataPreview
             key={keyTask ?? 'local-json-' + displayData.length}
